@@ -1,0 +1,3233 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI知识管理助手 - 手机App Demo</title>
+  <style>
+    :root {
+      --green: #5d8f2b;
+      --green-2: #79a947;
+      --pale: #eef7e8;
+      --paper: #fafbf6;
+      --line: #dfe9d5;
+      --text: #18210f;
+      --muted: #77806f;
+      --orange: #f6bd63;
+      --red: #f1260a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background:
+        radial-gradient(circle at 18% 12%, rgba(255,255,255,.92), transparent 360px),
+        linear-gradient(135deg, #dde8d5 0%, #edf3e8 52%, #d5e1cc 100%);
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: var(--text);
+    }
+    .stage {
+      width: min(100vw, 980px);
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 22px;
+    }
+    .iphone {
+      width: min(402px, calc(100vw - 28px));
+      height: min(874px, calc(100vh - 32px));
+      min-height: 690px;
+      border: 13px solid #11140f;
+      border-radius: 54px;
+      background: #11140f;
+      box-shadow: 0 30px 90px rgba(27, 40, 20, .34), 0 0 0 1px rgba(255,255,255,.45);
+      position: relative;
+      overflow: hidden;
+    }
+    .screen {
+      height: 100%;
+      border-radius: 40px;
+      overflow: hidden;
+      background: var(--paper);
+      position: relative;
+    }
+    .island {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 126px;
+      height: 31px;
+      border-radius: 0 0 18px 18px;
+      background: #11140f;
+      z-index: 8;
+    }
+    .home-indicator {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 132px;
+      height: 5px;
+      border-radius: 999px;
+      background: rgba(17,20,15,.8);
+      z-index: 9;
+    }
+    .status {
+      height: 47px;
+      padding: 13px 24px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .app {
+      height: calc(100% - 47px);
+      display: flex;
+      flex-direction: column;
+    }
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 16px 90px;
+      scrollbar-width: none;
+    }
+    .content::-webkit-scrollbar { display: none; }
+    .top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 4px 0 12px;
+    }
+    h1 {
+      margin: 0;
+      font-size: 24px;
+      line-height: 1.12;
+      letter-spacing: 0;
+    }
+    .sub {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+    .avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      color: white;
+      font-weight: 900;
+      background: linear-gradient(135deg, var(--green), #d6b848);
+      box-shadow: 0 10px 22px rgba(93,143,43,.24);
+    }
+    .hero {
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: linear-gradient(135deg, #eef8e7 0%, #fff 56%, #ffe8c2 100%);
+      box-shadow: 0 12px 28px rgba(58,80,42,.08);
+    }
+    .kicker {
+      color: var(--green);
+      font-size: 12px;
+      font-weight: 900;
+    }
+    .hero-title {
+      margin-top: 8px;
+      font-size: 17px;
+      line-height: 1.42;
+      font-weight: 900;
+    }
+    .chips {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+    .chip {
+      border: 1px solid #dbe8d2;
+      background: rgba(255,255,255,.78);
+      color: #586250;
+      border-radius: 999px;
+      padding: 5px 9px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .stat, .card {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: 0 8px 22px rgba(52,70,39,.06);
+    }
+    .stat {
+      padding: 12px 10px;
+      min-height: 82px;
+    }
+    .num {
+      color: var(--green);
+      font-size: 22px;
+      font-weight: 900;
+      line-height: 1;
+    }
+    .label {
+      margin-top: 8px;
+      color: #697260;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .task-card {
+      display: grid;
+      grid-template-columns: 1fr 1px 112px;
+      gap: 14px;
+      align-items: center;
+      padding: 15px;
+      margin-top: 12px;
+    }
+    .task-card > div:first-child,
+    .review-task-grid > div:first-child {
+      padding-left: 8px;
+    }
+    .ring {
+      width: 92px;
+      height: 92px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background:
+        radial-gradient(circle, #fff 55%, transparent 56%),
+        conic-gradient(var(--green) 0 68%, #e7efdf 68% 100%);
+      color: var(--green);
+      font-size: 20px;
+      font-weight: 950;
+    }
+    .divider-v {
+      width: 1px;
+      height: 126px;
+      background: #e1e4de;
+    }
+    .home-icons {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      color: #101510;
+      font-size: 26px;
+      line-height: 1;
+    }
+    .home-icon {
+      width: 26px;
+      height: 26px;
+      display: inline-grid;
+      place-items: center;
+    }
+    .home-icon svg {
+      width: 24px;
+      height: 24px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .review-carousel {
+      display: block;
+    }
+    .review-card {
+      border: 1px solid #dcebcf;
+      background: #fff;
+      border-radius: 12px;
+      min-height: 106px;
+      padding: 14px 13px;
+      box-shadow: 0 4px 12px rgba(52,70,39,.04);
+    }
+    .review-card .title {
+      line-height: 1.35;
+    }
+    .review-card .row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 68px;
+      align-items: center;
+      gap: 10px;
+    }
+    .review-card.extra {
+      display: none;
+    }
+    .review-card.selected {
+      display: block;
+    }
+    .tiny-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      color: #8a9183;
+      font-size: 11px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+    .tiny-row span {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      white-space: nowrap;
+    }
+    .tiny-row svg {
+      width: 12px;
+      height: 12px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .danger { color: var(--red); }
+    .link-button {
+      min-height: 34px;
+      width: 74px;
+      padding: 0 8px;
+      font-size: 12px;
+      line-height: 1.1;
+      color: var(--green);
+      border-color: #dbc7ff;
+      background: #fff;
+      white-space: nowrap;
+      flex: 0 0 74px;
+    }
+    .dots {
+      display: flex;
+      justify-content: center;
+      gap: 7px;
+      margin: 8px 0 18px;
+    }
+    .dot-page {
+      width: 12px;
+      height: 5px;
+      border-radius: 999px;
+      background: #dadbd7;
+      cursor: pointer;
+    }
+    .dot-page.on {
+      background: var(--green);
+    }
+    .purple-panel {
+      border-color: #eadbff;
+      background: #fbf7ff;
+    }
+    .orange-panel {
+      border-color: #ffe2b9;
+      background: #fffaf2;
+    }
+    .panel-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 13px;
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      font-size: 24px;
+      font-weight: 900;
+    }
+    .panel-icon svg {
+      width: 27px;
+      height: 27px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2.1;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .ai-panel-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 78px;
+      gap: 10px;
+      align-items: center;
+      margin-top: 12px;
+    }
+    .ai-panel-main {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      min-width: 0;
+    }
+    .ai-panel-main > div:last-child {
+      min-width: 0;
+    }
+    .ai-panel-main .title {
+      font-size: 16px;
+      line-height: 1.28;
+    }
+    .ai-panel-main .muted {
+      font-size: 13px;
+    }
+    .ai-kicker {
+      font-size: 14px;
+      font-weight: 950;
+    }
+    .review-progress-card {
+      padding: 16px;
+      border-radius: 16px;
+      margin-top: 10px;
+    }
+    .review-nav {
+      display: block;
+      margin: 6px 0 12px;
+    }
+    .back-btn {
+      min-height: 36px;
+      width: 36px;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      font-size: 25px;
+      color: #1d2418;
+    }
+    .review-title-top {
+      text-align: left;
+      font-size: 22px;
+      font-weight: 950;
+    }
+    .review-progress-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+      color: #42483f;
+    }
+    .review-progress-head b {
+      color: var(--green);
+      font-size: 20px;
+    }
+    .progress-track {
+      height: 5px;
+      border-radius: 999px;
+      background: #e8e8e8;
+      margin-top: 14px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      width: 6%;
+      height: 100%;
+      border-radius: 999px;
+      background: var(--green);
+    }
+    .review-priority {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin: 18px 2px 10px;
+      color: #9a9d99;
+      font-size: 13px;
+      font-weight: 800;
+    }
+    .review-priority svg {
+      width: 15px;
+      height: 15px;
+      stroke: #ff5a4f;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .review-main-card {
+      padding: 20px;
+      border-radius: 16px;
+    }
+    .review-main-title {
+      font-size: 17px;
+      line-height: 1.35;
+      font-weight: 950;
+    }
+    .review-question {
+      margin-top: 14px;
+      padding-top: 18px;
+      border-top: 1px solid #ecefec;
+      font-size: 14px;
+      line-height: 1.85;
+    }
+    .review-response-space {
+      min-height: 142px;
+      margin-top: 16px;
+      padding: 13px 12px;
+      border-radius: 14px;
+      background: #fbfcf7;
+      border: 0;
+      color: #5f6858;
+      font-size: 13px;
+      line-height: 1.65;
+    }
+    .review-response-space.empty {
+      background: transparent;
+      padding: 0;
+    }
+    .review-response-space strong {
+      color: #1a2114;
+    }
+    .review-response-space .danger-text {
+      color: #e23b2f;
+      font-weight: 950;
+    }
+    .next-question-btn {
+      width: 100%;
+      margin-top: 14px;
+      display: none;
+    }
+    .hint-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 28px;
+      padding: 10px 12px;
+      border-radius: 13px;
+      background: #eef7e8;
+      color: #64912d;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .hint-pill svg {
+      width: 17px;
+      height: 17px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .assist-card {
+      padding: 15px;
+      border-radius: 16px;
+      margin-top: 14px;
+    }
+    .assist-title {
+      color: #9a70f0;
+      font-size: 13px;
+      font-weight: 950;
+      margin-bottom: 12px;
+    }
+    .assist-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+    .assist-btn {
+      border: 0;
+      background: transparent;
+      color: #3b4a2b;
+      min-height: 52px;
+      padding: 4px 2px;
+      display: grid;
+      place-items: center;
+      gap: 4px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .assist-btn svg {
+      width: 25px;
+      height: 25px;
+      stroke: var(--green);
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .memory-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .memory-btn {
+      min-height: 98px;
+      border-radius: 14px;
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      padding: 10px 6px;
+      font-size: 13px;
+      font-weight: 900;
+      color: #2f352d;
+    }
+    .memory-btn svg {
+      width: 30px;
+      height: 30px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .memory-btn small {
+      color: #9a9f96;
+      font-size: 11px;
+      font-weight: 800;
+    }
+    .memory-btn.no {
+      border-color: #e2e2e2;
+    }
+    .memory-btn.fuzzy {
+      border-color: #ffb56e;
+      color: #f2992e;
+      background: #fff8ef;
+    }
+    .memory-btn.known {
+      border-color: var(--green);
+      color: var(--green);
+      background: #f3faed;
+    }
+    .flip-answer {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+      margin-top: 10px;
+      color: var(--green);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .review-task-view {
+      display: block;
+      padding-bottom: 72px;
+    }
+    .review-study-view {
+      display: none;
+    }
+    .review-task-hero {
+      padding: 15px;
+      border-radius: 18px;
+      margin-top: 10px;
+    }
+    .review-task-grid {
+      display: grid;
+      grid-template-columns: 1fr 1px 112px;
+      gap: 14px;
+      align-items: center;
+      margin-top: 0;
+    }
+    .review-task-count {
+      font-size: 38px;
+      line-height: 1;
+      font-weight: 950;
+      color: var(--green);
+    }
+    .review-task-list {
+      margin-top: 16px;
+      display: grid;
+      gap: 0;
+      padding: 0 14px;
+      border-radius: 16px;
+      background: #fff;
+      border: 1px solid var(--line);
+      box-shadow: 0 8px 22px rgba(52,70,39,.06);
+    }
+    .review-complete-message {
+      display: none;
+      min-height: 380px;
+      place-items: center;
+      text-align: center;
+      color: var(--green);
+      font-size: 18px;
+      line-height: 1.5;
+      font-weight: 950;
+    }
+    .review-fixed-action {
+      position: absolute;
+      left: 28px;
+      right: 28px;
+      bottom: 94px;
+      z-index: 6;
+      display: flex;
+      justify-content: center;
+      pointer-events: none;
+    }
+    .review-fixed-action .primary {
+      width: 100%;
+      min-height: 44px;
+      pointer-events: auto;
+      box-shadow: 0 12px 24px rgba(93,143,43,.24);
+    }
+    .review-filter-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 16px;
+    }
+    .review-filter {
+      min-height: 34px;
+      padding: 0 8px;
+      border-radius: 999px;
+      background: #f2f3f0;
+      color: #697260;
+      font-size: 12px;
+      font-weight: 850;
+      border-color: transparent;
+    }
+    .review-filter.active {
+      background: #fff;
+      border-color: #d9dfd4;
+      color: #22291d;
+    }
+    .review-task-item {
+      padding: 15px 0;
+      border-bottom: 1px solid #ecefec;
+    }
+    .review-task-item:last-child {
+      border-bottom: 0;
+    }
+    .review-task-item-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    .level-pill,
+    .state-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 24px;
+      padding: 0 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+    .level-high, .state-forget {
+      color: #ff5148;
+      background: #ffe4e1;
+    }
+    .level-mid, .state-weak {
+      color: #d99a18;
+      background: #fff1cc;
+    }
+    .level-ok, .state-ok {
+      color: var(--green);
+      background: #e5f3da;
+    }
+    .review-task-item .title {
+      margin-top: 8px;
+      font-size: 16px;
+      line-height: 1.32;
+    }
+    .review-task-item .muted {
+      font-size: 13px;
+      margin-top: 8px;
+    }
+    .checkin-view {
+      display: none;
+    }
+    .checkin-hero {
+      padding: 22px 18px;
+      border-radius: 20px;
+      text-align: center;
+      background: linear-gradient(135deg, #eef8e7 0%, #fff 58%, #ffe8c2 100%);
+      border: 1px solid var(--line);
+      box-shadow: 0 12px 28px rgba(58,80,42,.08);
+    }
+    .checkin-badge {
+      width: 66px;
+      height: 66px;
+      margin: 0 auto 12px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: var(--green);
+      color: white;
+      font-size: 34px;
+      font-weight: 950;
+    }
+    .checkin-title {
+      font-size: 22px;
+      font-weight: 950;
+    }
+    .checkin-sub {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+    .checkin-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .checkin-stat {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 12px 8px;
+      text-align: center;
+    }
+    .checkin-stat .num {
+      font-size: 22px;
+    }
+    .mastery-note {
+      margin-top: 14px;
+      padding: 13px;
+      border-radius: 16px;
+      background: #f2f8ec;
+      color: #536047;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+    .task-mastery-empty {
+      min-height: 112px;
+      display: grid;
+      place-items: center;
+      padding: 8px;
+      color: #728067;
+      font-size: 13px;
+      line-height: 1.5;
+      font-weight: 800;
+    }
+    .purple-panel .panel-icon {
+      background: #efe2ff;
+      color: #9a70f0;
+    }
+    .orange-panel .panel-icon {
+      background: #ffedcf;
+      color: #f2a03b;
+    }
+    .quick-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .quick-card {
+      min-height: 112px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: #fff;
+      box-shadow: 0 8px 22px rgba(52,70,39,.06);
+      cursor: pointer;
+    }
+    .quick-card:active { transform: scale(.985); }
+    .quick-icon {
+      width: 36px;
+      height: 36px;
+      display: grid;
+      place-items: center;
+      border-radius: 12px;
+      background: var(--pale);
+      color: var(--green);
+      font-weight: 950;
+      margin-bottom: 10px;
+    }
+    .timeline {
+      margin-top: 12px;
+      padding: 14px;
+      border-radius: 20px;
+      border: 1px solid var(--line);
+      background: #fff;
+    }
+    .timeline-row {
+      display: grid;
+      grid-template-columns: 24px 1fr;
+      gap: 8px;
+      align-items: start;
+      padding: 7px 0;
+    }
+    .dot {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: var(--green);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 950;
+    }
+    .dot.pending {
+      background: #eef4e8;
+      color: #7a836f;
+    }
+    .screen-page[data-page="import"] > .top,
+    .screen-page[data-page="import"] > .quick-grid,
+    .screen-page[data-page="import"] > .steps,
+    .screen-page[data-page="import"] > .field,
+    .screen-page[data-page="import"] > #processBtn,
+    .screen-page[data-page="import"] > #resultPanel {
+      display: none;
+    }
+    .screen-page[data-page="import"] > .section-title {
+      display: none;
+    }
+    .import-flow-top {
+      display: grid;
+      grid-template-columns: 36px 1fr 36px;
+      align-items: center;
+      margin: 2px 0 14px;
+    }
+    .import-flow-top h1 {
+      text-align: center;
+      font-size: 23px;
+    }
+    .flow-back {
+      width: 32px;
+      height: 32px;
+      min-height: 32px;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      font-size: 28px;
+      font-weight: 500;
+    }
+    .flow-steps {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+      margin: 6px 4px 18px;
+      position: relative;
+    }
+    .flow-step {
+      display: grid;
+      justify-items: center;
+      gap: 7px;
+      color: #9aa098;
+      font-size: 12px;
+      font-weight: 800;
+      position: relative;
+    }
+    .flow-step:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      top: 15px;
+      left: calc(50% + 17px);
+      width: calc(100% - 34px);
+      height: 2px;
+      background: #cfd4cd;
+    }
+    .flow-step.done:not(:last-child)::after {
+      background: var(--green);
+    }
+    .flow-step .circle {
+      width: 31px;
+      height: 31px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      border: 2px solid #cbd1c8;
+      background: #fff;
+      color: #9aa098;
+      font-size: 17px;
+      font-weight: 950;
+      z-index: 1;
+    }
+    .flow-step.active .circle,
+    .flow-step.done .circle {
+      border-color: var(--green);
+      color: var(--green);
+    }
+    .flow-step.done .circle {
+      color: #fff;
+      background: var(--green);
+    }
+    .flow-step.active,
+    .flow-step.done {
+      color: var(--green);
+    }
+    .import-source-card {
+      display: grid;
+      grid-template-columns: 62px 1fr;
+      align-items: center;
+      gap: 12px;
+      padding: 16px;
+    }
+    .source-icon-large {
+      width: 58px;
+      height: 58px;
+      display: grid;
+      place-items: center;
+      border-radius: 14px;
+      font-size: 28px;
+      font-weight: 950;
+    }
+    .import-input-panel textarea {
+      min-height: 142px;
+    }
+    .import-source-card {
+      animation: sourcePop .28s ease both;
+    }
+    @keyframes sourcePop {
+      from { opacity: .35; transform: translateY(8px) scale(.985); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .import-stage-panel,
+    .import-fail-panel,
+    .import-ai-panel,
+    .import-confirm-panel {
+      display: none;
+      padding-bottom: 74px;
+    }
+    .import-progress-head,
+    .fail-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 10px 0;
+      color: var(--green);
+      font-weight: 900;
+    }
+    .progress-fill {
+      transition: width .45s ease;
+    }
+    .parse-spinner {
+      width: 16px;
+      height: 16px;
+      display: inline-block;
+      margin-right: 6px;
+      border-radius: 50%;
+      border: 3px solid #dfead4;
+      border-top-color: var(--green);
+      vertical-align: -3px;
+      animation: spin .7s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .progress-fill.fail {
+      background: #ff2a16;
+    }
+    .import-preview {
+      margin-top: 14px;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid #edf3e8;
+      background: #fbfdf8;
+      color: #60695b;
+      font-size: 12px;
+      line-height: 1.6;
+      max-height: 180px;
+      overflow: hidden;
+      white-space: pre-line;
+    }
+    .fail-head {
+      color: #ff2a16;
+    }
+    .fail-head span {
+      width: 28px;
+      height: 28px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      color: #fff;
+      background: #ff2a16;
+    }
+    .fail-reasons {
+      margin-top: 14px;
+      border: 1px solid #ffd5cf;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #fff5f3;
+      color: #8b3a32;
+      font-size: 12px;
+    }
+    .fail-reasons div {
+      padding: 11px 12px;
+      border-bottom: 1px solid #ffdeda;
+    }
+    .fail-reasons div:last-child {
+      border-bottom: 0;
+    }
+    .ai-process-title {
+      margin: 18px 0 6px;
+      text-align: center;
+      color: var(--green);
+      font-size: 24px;
+      line-height: 1.25;
+    }
+    .ai-process-title b {
+      color: #101510;
+      font-size: 25px;
+    }
+    .ai-process-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .ai-process-card {
+      min-height: 170px;
+      display: grid;
+      justify-items: center;
+      align-content: start;
+      text-align: center;
+      padding: 14px 10px;
+      opacity: 0;
+      transform: translateY(12px);
+      animation: aiCardIn .42s ease forwards;
+    }
+    .ai-process-card:nth-child(2) { animation-delay: .35s; }
+    .ai-process-card:nth-child(3) { animation-delay: .7s; }
+    .ai-process-card:nth-child(4) { animation-delay: 1.05s; }
+    @keyframes aiCardIn {
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .process-icon {
+      width: 58px;
+      height: 58px;
+      display: grid;
+      place-items: center;
+      margin-bottom: 10px;
+      border-radius: 50%;
+      color: var(--green);
+      background: #e7f2d9;
+    }
+    .process-icon svg {
+      width: 34px;
+      height: 34px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2.2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .ai-process-card span {
+      margin-top: 8px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      color: var(--green);
+      background: #eef7e8;
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .ai-process-card span.processing {
+      color: #b78323;
+      background: #fff3d8;
+    }
+    .ai-process-card span.pending {
+      color: #8a9183;
+      background: #f1f3ef;
+    }
+    .ai-process-card p {
+      margin: 10px 0 0;
+      padding: 8px;
+      border-radius: 8px;
+      color: #7a866f;
+      background: #f1f7ea;
+      font-size: 11px;
+      line-height: 1.45;
+    }
+    .agent-note {
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 12px;
+      background: #eef7e8;
+      color: #5f7d38;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+    .confirm-tip {
+      margin: 18px 0 12px;
+      color: #8d9488;
+      font-size: 14px;
+      font-weight: 800;
+    }
+    .knowledge-preview-card {
+      border: 1px solid #e3e9de;
+      border-radius: 12px;
+      padding: 14px;
+    }
+    .knowledge-preview-card .summary {
+      margin-top: 10px;
+      color: #697260;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+    .related-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .related-list span {
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--green);
+      color: var(--green);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .json-box {
+      margin: 10px 0;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+      font-size: 12px;
+    }
+    .json-box pre {
+      max-height: 160px;
+      overflow: auto;
+      white-space: pre-wrap;
+      color: #4b5446;
+    }
+    .flow-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 14px;
+    }
+    .import-confirm-panel .flow-actions {
+      position: absolute;
+      left: 28px;
+      right: 28px;
+      bottom: 94px;
+      z-index: 6;
+      margin-top: 0;
+      padding: 10px 0;
+      background: linear-gradient(to top, var(--paper) 72%, rgba(250,251,246,0));
+    }
+    .import-confirm-panel .flow-actions button {
+      min-height: 46px;
+      background: #fff;
+    }
+    .import-confirm-panel .flow-actions button.primary {
+      background: linear-gradient(135deg, var(--green), var(--green-2));
+    }
+    .profile-head {
+      display: grid;
+      grid-template-columns: 62px 1fr 22px;
+      gap: 12px;
+      align-items: center;
+      margin: 18px 4px 14px;
+    }
+    .profile-avatar {
+      width: 62px;
+      height: 62px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      border: 2px solid #e37d88;
+      background: radial-gradient(circle at 50% 45%, #fff8dc 0 62%, #fff0dd 100%);
+      color: #dd7f78;
+      font-size: 28px;
+      overflow: hidden;
+    }
+    .profile-avatar svg {
+      width: 48px;
+      height: 48px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .profile-name {
+      font-size: 20px;
+      font-weight: 950;
+    }
+    .profile-badge {
+      margin-left: 8px;
+      display: inline-grid;
+      place-items: center;
+      color: #fb4d72;
+      font-weight: 950;
+      font-size: 18px;
+      vertical-align: 1px;
+    }
+    .profile-badge svg {
+      width: 20px;
+      height: 20px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2.4;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .profile-arrow {
+      color: #888f84;
+      font-size: 32px;
+      line-height: 1;
+    }
+    .vip-card {
+      display: grid;
+      grid-template-columns: 42px 1fr 74px;
+      align-items: center;
+      gap: 10px;
+      margin: 0 0 16px;
+      padding: 12px 14px;
+      border: 1px solid #ffa83d;
+      border-radius: 8px;
+      background: #fff1d8;
+    }
+    .vip-icon {
+      color: #f39a24;
+      font-size: 34px;
+      line-height: 1;
+    }
+    .vip-card button {
+      min-height: 32px;
+      padding: 0 12px;
+      border: 0;
+      background: #fff;
+      color: #a66d33;
+      font-size: 12px;
+    }
+    .profile-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      padding: 14px 0;
+      border-radius: 16px;
+    }
+    .profile-stats > div {
+      display: grid;
+      justify-items: center;
+      gap: 6px;
+      border-right: 1px solid #e4e9df;
+      cursor: pointer;
+    }
+    .profile-stats > div:last-child {
+      border-right: 0;
+    }
+    .profile-stat-icon {
+      width: 32px;
+      height: 32px;
+      display: grid;
+      place-items: center;
+    }
+    .profile-stat-icon svg {
+      width: 30px;
+      height: 30px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.9;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .profile-stat-icon.green { color: var(--green); }
+    .profile-stat-icon.blue { color: #1e9ff3; }
+    .profile-stat-icon.red { color: #f04c20; }
+    .profile-stat-icon.purple { color: #9653e6; }
+    .profile-stats b {
+      font-size: 13px;
+      line-height: 1;
+    }
+    .profile-stats span {
+      color: #697260;
+      font-size: 11px;
+      font-weight: 800;
+    }
+    .profile-menu {
+      padding: 14px 20px;
+      border-radius: 16px;
+    }
+    .profile-menu-item {
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      align-items: center;
+      min-height: 43px;
+      font-size: 15px;
+      font-weight: 850;
+    }
+    .profile-menu-item span {
+      width: 28px;
+      height: 28px;
+      display: grid;
+      place-items: center;
+    }
+    .profile-menu-item svg {
+      width: 23px;
+      height: 23px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.9;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .profile-divider {
+      height: 1px;
+      margin: 8px 0;
+      background: #e6eae3;
+    }
+    .study-data-card {
+      display: grid;
+      grid-template-columns: 44px 1fr;
+      gap: 10px;
+      align-items: center;
+      padding: 14px 18px;
+      border-radius: 16px;
+    }
+    .study-data-icon {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      color: var(--green);
+      background: #e7f2d9;
+      font-weight: 950;
+    }
+    .study-data-icon svg {
+      width: 28px;
+      height: 28px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .library-manage-btn {
+      min-height: 34px;
+      padding: 0 13px;
+      border-radius: 999px;
+      color: var(--green);
+      background: #eef7e8;
+      border-color: #d7e8ca;
+      font-size: 13px;
+    }
+    .library-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .library-actions button {
+      min-height: 34px;
+      font-size: 12px;
+    }
+    .library-manage-actions {
+      display: none;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .library-card.manage-mode .library-manage-actions {
+      display: grid;
+    }
+    .related-sheet-mask {
+      position: absolute;
+      inset: 0;
+      z-index: 6;
+      display: flex;
+      align-items: flex-end;
+      background: rgba(17,20,15,.38);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .18s ease;
+    }
+    .related-sheet-mask.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .related-sheet {
+      width: 100%;
+      padding: 12px 18px 118px;
+      border-radius: 26px 26px 0 0;
+      background: #fff;
+      box-shadow: 0 -18px 42px rgba(23,31,17,.18);
+      transform: translateY(104%);
+      transition: transform .22s ease;
+    }
+    .related-sheet-mask.show .related-sheet {
+      transform: translateY(0);
+    }
+    .related-card {
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      margin-top: 10px;
+      background: #fbfdf8;
+    }
+    button {
+      border: 0;
+      border-radius: 999px;
+      min-height: 42px;
+      padding: 0 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font: inherit;
+      font-weight: 900;
+      cursor: pointer;
+      background: #fff;
+      color: var(--text);
+      border: 1px solid #dbe7d2;
+    }
+    button.primary {
+      color: white;
+      border-color: transparent;
+      background: linear-gradient(135deg, var(--green), var(--green-2));
+    }
+    .section-title {
+      margin: 18px 0 8px;
+      font-size: 16px;
+      font-weight: 950;
+    }
+    .card {
+      padding: 14px;
+      margin-bottom: 10px;
+    }
+    .card.soft {
+      background: #f2f8ec;
+    }
+    .row {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .title {
+      font-size: 15px;
+      font-weight: 950;
+      line-height: 1.34;
+    }
+    .muted {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.46;
+      margin-top: 4px;
+    }
+    .tag {
+      display: inline-flex;
+      margin: 8px 5px 0 0;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: var(--pale);
+      color: var(--green);
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .score {
+      min-width: 52px;
+      text-align: right;
+      color: var(--green);
+      font-weight: 950;
+    }
+    .tabs {
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      bottom: 20px;
+      z-index: 7;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 5px;
+      padding: 7px;
+      border: 1px solid #dfe9d5;
+      border-radius: 24px;
+      background: rgba(255,255,255,.88);
+      backdrop-filter: blur(18px);
+      box-shadow: 0 12px 26px rgba(44,64,24,.16);
+    }
+    .tabs.is-hidden {
+      display: none;
+    }
+    .import-sheet-mask {
+      position: absolute;
+      inset: 0;
+      z-index: 6;
+      display: flex;
+      align-items: flex-end;
+      background: rgba(17, 20, 15, .38);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .18s ease;
+    }
+    .import-sheet-mask.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .import-sheet {
+      width: 100%;
+      padding: 12px 20px 122px;
+      border-radius: 28px 28px 0 0;
+      background: #fff;
+      box-shadow: 0 -18px 42px rgba(23, 31, 17, .18);
+      transform: translateY(104%);
+      transition: transform .22s ease;
+    }
+    .import-sheet-mask.show .import-sheet {
+      transform: translateY(0);
+    }
+    .sheet-handle {
+      width: 56px;
+      height: 5px;
+      border-radius: 999px;
+      margin: 0 auto 18px;
+      background: #d9dbd7;
+    }
+    .sheet-close {
+      position: absolute;
+      right: 18px;
+      top: 18px;
+      width: 28px;
+      height: 28px;
+      min-height: 28px;
+      padding: 0;
+      border: 0;
+      border-radius: 50%;
+      background: #eef0ec;
+      color: #777d72;
+      font-size: 22px;
+      line-height: 1;
+    }
+    .sheet-title {
+      text-align: center;
+      font-size: 24px;
+      line-height: 1.15;
+      font-weight: 950;
+    }
+    .sheet-sub {
+      margin-top: 8px;
+      text-align: center;
+      color: #8a9183;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+    .sheet-kicker {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 16px 0 12px;
+      font-size: 17px;
+      font-weight: 950;
+    }
+    .sheet-kicker span {
+      color: var(--green);
+      font-size: 24px;
+      line-height: 1;
+    }
+    .sheet-import-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px 12px;
+    }
+    .sheet-import-card {
+      min-height: 106px;
+      display: grid;
+      grid-template-columns: 48px minmax(0, 1fr);
+      gap: 11px;
+      align-items: center;
+      padding: 12px;
+      border-radius: 13px;
+      border: 1px solid #dde2d8;
+      background: #fff;
+      box-shadow: 0 4px 12px rgba(52, 70, 39, .06);
+      text-align: left;
+    }
+    .sheet-import-icon {
+      width: 48px;
+      height: 48px;
+      display: grid;
+      place-items: center;
+      border-radius: 14px;
+      font-size: 24px;
+      font-weight: 950;
+    }
+    .sheet-import-card .title {
+      font-size: 15px;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+    .sheet-import-card .muted {
+      margin-top: 5px;
+      font-size: 11px;
+      line-height: 1.45;
+      word-break: normal;
+      overflow-wrap: anywhere;
+    }
+    .review-back-btn {
+      width: 34px;
+      height: 34px;
+      min-height: 34px;
+      padding: 0;
+      margin-bottom: 10px;
+      border-radius: 50%;
+      color: var(--green);
+      background: #eef7e8;
+      border-color: #d7e8ca;
+      font-size: 20px;
+      font-weight: 950;
+    }
+    .tab {
+      min-height: 48px;
+      padding: 0;
+      font-size: 14px;
+      border-color: transparent;
+      background: transparent;
+      color: #5c6553;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      font-weight: 800;
+    }
+    .tab.active {
+      color: var(--green);
+      background: transparent;
+    }
+    .tab.add {
+      width: 42px;
+      height: 42px;
+      min-height: 42px;
+      justify-self: center;
+      align-self: center;
+      margin-top: 0;
+      border-radius: 50%;
+      color: white;
+      font-size: 28px;
+      line-height: 1;
+      font-weight: 400;
+      background: linear-gradient(135deg, var(--green), var(--green-2));
+      border: 0;
+      box-shadow: 0 10px 20px rgba(93,143,43,.28);
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 0 0 3px;
+    }
+    .tab.add.active {
+      color: white;
+      background: linear-gradient(135deg, var(--green), var(--green-2));
+    }
+    .screen-page { display: none; }
+    .screen-page.active { display: block; animation: fade .18s ease-out; }
+    @keyframes fade {
+      from { opacity: .4; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+    .step {
+      border-radius: 14px;
+      padding: 8px 4px;
+      text-align: center;
+      background: #edf4e7;
+      color: #66705d;
+      font-size: 12px;
+      font-weight: 900;
+    }
+    .step.on {
+      background: var(--green);
+      color: white;
+    }
+    input, textarea, select {
+      width: 100%;
+      border: 1px solid #dfe8d7;
+      border-radius: 16px;
+      background: white;
+      padding: 12px;
+      font: inherit;
+      font-size: 13px;
+      outline: none;
+    }
+    textarea {
+      min-height: 128px;
+      resize: none;
+      line-height: 1.5;
+    }
+    .field { margin-bottom: 10px; }
+    .result-panel { display: none; }
+    .result-panel.show { display: block; }
+    .toast {
+      position: absolute;
+      left: 50%;
+      top: 48%;
+      transform: translate(-50%, -50%) scale(.96);
+      background: rgba(35,35,35,.9);
+      color: white;
+      border-radius: 16px;
+      padding: 18px 22px;
+      text-align: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: .18s ease;
+      z-index: 20;
+      font-size: 13px;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    .check {
+      font-size: 34px;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+    .answer {
+      white-space: pre-line;
+      line-height: 1.55;
+    }
+    .agent-status-card {
+      border-color: #d7e8ca;
+      background: #f5fbef;
+    }
+    .agent-flow {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      margin-top: 12px;
+    }
+    .agent-flow-step {
+      min-height: 54px;
+      display: grid;
+      place-items: center;
+      gap: 4px;
+      padding: 7px 4px;
+      border-radius: 12px;
+      background: #fff;
+      border: 1px solid #e1ead9;
+      color: #687360;
+      font-size: 10px;
+      font-weight: 900;
+      text-align: center;
+      line-height: 1.2;
+    }
+    .agent-flow-step b {
+      width: 20px;
+      height: 20px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--pale);
+      color: var(--green);
+      font-size: 12px;
+    }
+    .agent-flow-step.active {
+      border-color: var(--green);
+      color: var(--green);
+      background: #eef7e8;
+    }
+    .agent-tool-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 10px 0;
+    }
+    .agent-tool {
+      min-height: 78px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #fff;
+    }
+    .agent-tool .muted {
+      font-size: 11px;
+    }
+    .source-chip {
+      display: block;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid #e2eadb;
+      background: #fbfdf8;
+      margin-top: 8px;
+    }
+    .agent-suggestion {
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: #fff8eb;
+      border: 1px solid #ffe0ad;
+      color: #7c5a22;
+      font-size: 12px;
+      line-height: 1.45;
+      margin-top: 8px;
+    }
+    .agent-chain {
+      display: grid;
+      gap: 8px;
+    }
+    .agent-chain-row {
+      display: grid;
+      grid-template-columns: 26px 1fr;
+      gap: 9px;
+      align-items: start;
+      padding: 10px;
+      border-radius: 12px;
+      background: #f7fbf2;
+      border: 1px solid #e0ead8;
+    }
+    .agent-chain-row b {
+      width: 24px;
+      height: 24px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--green);
+      color: #fff;
+      font-size: 12px;
+    }
+    .rag-mini {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+    .rag-mini span {
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: #f0f7ea;
+      color: var(--green);
+      font-size: 11px;
+      font-weight: 900;
+    }
+    @media (max-height: 760px) {
+      .iphone { min-height: 640px; }
+      .content { padding-bottom: 82px; }
+      .hero-title { font-size: 16px; }
+      .stat { min-height: 72px; }
+    }
+    @media (max-width: 520px) {
+      body {
+        display: block;
+        min-height: 100dvh;
+        background: var(--paper);
+      }
+      .stage {
+        width: 100vw;
+        min-height: 100dvh;
+        padding: 0;
+        display: block;
+      }
+      .iphone {
+        width: 100vw;
+        height: 100dvh;
+        min-height: 100dvh;
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+        background: var(--paper);
+      }
+      .screen {
+        border-radius: 0;
+      }
+      .island {
+        display: none;
+      }
+      .status {
+        height: max(36px, env(safe-area-inset-top));
+        padding: max(10px, env(safe-area-inset-top)) 22px 0;
+      }
+      .app {
+        height: calc(100% - max(36px, env(safe-area-inset-top)));
+      }
+      .content {
+        padding-left: 16px;
+        padding-right: 16px;
+        padding-bottom: calc(92px + env(safe-area-inset-bottom));
+      }
+      .tabs {
+        left: 10px;
+        right: 10px;
+        bottom: calc(12px + env(safe-area-inset-bottom));
+      }
+      .home-indicator {
+        display: none;
+      }
+      .import-sheet,
+      .related-sheet {
+        padding-bottom: calc(108px + env(safe-area-inset-bottom));
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="stage">
+    <section class="iphone" aria-label="iPhone手机App预览">
+      <div class="screen">
+        <div class="island"></div>
+        <div class="status"><span>9:41</span><span></span><span>100%</span></div>
+        <div class="app">
+          <div class="content">
+            <section class="screen-page active" data-page="home">
+              <div class="top">
+                <div>
+                  <h1>早上好，小知同学</h1>
+                </div>
+                <div class="home-icons">
+                  <span class="home-icon" aria-label="搜索">
+                    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><path d="m16.5 16.5 4 4"></path></svg>
+                  </span>
+                  <span class="home-icon" aria-label="通知">
+                    <svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path><path d="M10 21h4"></path></svg>
+                  </span>
+                </div>
+              </div>
+              <div class="card task-card">
+                <div>
+                  <div class="title" id="homeTaskTitle">今日任务</div>
+                  <div style="display:flex;align-items:end;gap:8px;margin-top:14px">
+                    <div class="num" id="homeTaskCount" style="font-size:38px;color:var(--green)">18</div>
+                    <div class="label" style="margin-bottom:5px">条</div>
+                  </div>
+                  <div class="muted" id="homeTaskMeta" style="font-size:13px">预计用时 15 分钟</div>
+                  <button class="primary" id="homeReviewBtn" style="min-height:36px;margin-top:8px;padding:0 18px;min-width:92px">开始复习</button>
+                </div>
+                <div class="divider-v"></div>
+                <div style="text-align:center" id="homeMasteryPanel">
+                  <div class="task-mastery-empty">今日还未复习，赶快开始吧！</div>
+                </div>
+              </div>
+              <div class="row" style="margin:22px 0 8px">
+                <div class="section-title" style="margin:0">✦ 今日重点复习</div>
+                <button data-go="review" style="min-height:22px;padding:0;border:0;background:transparent;color:#6c7465;font-size:12px">查看更多 ›</button>
+              </div>
+              <div class="review-carousel" id="reviewCarousel">
+                <div class="review-card extra">
+                  <div class="danger" style="font-size:12px;font-weight:800">高优先级</div>
+                  <div class="row">
+                    <div>
+                      <div class="title" style="margin-top:8px">费曼学习法的核心概念</div>
+                      <div class="tiny-row">
+                        <span><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>8 分钟</span>
+                        <span><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"></rect><path d="M8 3v4M16 3v4M4 10h16"></path></svg>3 天前</span>
+                        <span class="danger"><svg viewBox="0 0 24 24"><path d="M12 3 22 20H2L12 3Z"></path><path d="M12 9v5M12 17h.01"></path></svg>即将遗忘</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="review-card extra">
+                  <div class="danger" style="font-size:12px;font-weight:800;color:#f2992e">中优先级</div>
+                  <div class="row">
+                    <div>
+                      <div class="title" style="margin-top:8px">主动回忆的核心概念</div>
+                      <div class="tiny-row">
+                        <span><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>6 分钟</span>
+                        <span><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"></rect><path d="M8 3v4M16 3v4M4 10h16"></path></svg>5 天前</span>
+                        <span class="danger"><svg viewBox="0 0 24 24"><path d="M12 3 22 20H2L12 3Z"></path><path d="M12 9v5M12 17h.01"></path></svg>需要巩固</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="review-card">
+                  <div style="font-size:12px;font-weight:800;color:var(--green)">低优先级</div>
+                  <div class="row">
+                    <div>
+                      <div class="title" style="margin-top:8px">RAG 产品设计流程</div>
+                      <div class="tiny-row">
+                        <span><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>7 分钟</span>
+                        <span><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"></rect><path d="M8 3v4M16 3v4M4 10h16"></path></svg>2 天前</span>
+                        <span style="color:var(--green)"><svg viewBox="0 0 24 24"><path d="M12 3 22 20H2L12 3Z"></path><path d="M12 9v5M12 17h.01"></path></svg>状态稳定</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="dots" id="reviewDots"><span class="dot-page on"></span><span class="dot-page"></span><span class="dot-page"></span></div>
+              <div class="card purple-panel" style="margin-bottom:18px">
+                <div class="kicker ai-kicker" style="color:#8a4ee8">AI 发现新关联</div>
+                <div class="ai-panel-row">
+                  <div class="ai-panel-main">
+                    <div class="panel-icon"><svg viewBox="0 0 24 24"><path d="M8 12h8"></path><path d="M9 7H6a5 5 0 0 0 0 10h3"></path><path d="M15 7h3a5 5 0 0 1 0 10h-3"></path></svg></div>
+                    <div><div class="title">费曼学习法的核心概念</div><div class="muted">与你的「复习方法汇总」高度相关</div></div>
+                  </div>
+                  <button class="link-button" data-go="library" style="color:#8a4ee8">查看关联 ›</button>
+                </div>
+              </div>
+              <div class="card orange-panel" style="margin-top:0">
+                <div class="kicker ai-kicker" style="color:#f2992e">AI 提醒</div>
+                <div class="ai-panel-row">
+                  <div class="ai-panel-main">
+                    <div class="panel-icon">◷</div>
+                    <div><div class="title" id="aiReminderTitle">12 条知识卡片超过 14 天未回顾</div><div class="muted" id="aiReminderText">遗忘风险较高，建议及时复习</div></div>
+                  </div>
+                  <button class="link-button" id="aiReminderBtn" data-go="review" style="border-color:#ffd99d;color:#f2992e">开始回顾 ›</button>
+                </div>
+              </div>
+            </section>
+
+            <section class="screen-page" data-page="import">
+              <div class="import-flow">
+                <div class="import-flow-top">
+                  <button class="flow-back" id="importBackBtn" aria-label="返回">‹</button>
+                  <h1>导入流程</h1>
+                </div>
+                <div class="flow-steps" id="importSteps"></div>
+                <div class="card import-source-card" id="importSourceCard"></div>
+                <div class="card import-input-panel" id="importInputPanel">
+                  <div class="section-title">选择来源</div>
+                  <div class="field"><input id="flowSourceName" aria-label="来源名称"></div>
+                  <div class="field"><textarea id="flowSourceText" aria-label="导入内容"></textarea></div>
+                  <button class="primary" id="importParseBtn" style="width:100%">开始解析</button>
+                </div>
+                <div class="card import-stage-panel" id="importParsePanel">
+                  <div class="section-title">解析内容</div>
+                  <div class="import-progress-head"><span id="parseStatus">正在解析内容</span><b id="parsePercent">50%</b></div>
+                  <div class="progress-track"><div class="progress-fill" id="parseProgressFill" style="width:50%"></div></div>
+                  <div class="muted" id="parseHint">AI 正在识别内容结构，提取关键信息...</div>
+                  <div class="import-preview" id="importPreview"></div>
+                </div>
+                <div class="card import-fail-panel" id="importFailPanel">
+                  <div class="section-title">解析内容</div>
+                  <div class="fail-head"><span>!</span><b>解析失败</b><strong>50%</strong></div>
+                  <div class="progress-track"><div class="progress-fill fail" style="width:50%"></div></div>
+                  <div class="muted">文件解析已中断，请根据失败原因处理后重试</div>
+                  <div class="fail-reasons">
+                    <div><b>文件过大：</b>当前内容超出单次解析大小限制</div>
+                    <div><b>格式不支持：</b>仅支持 PDF / DOCX / TXT / 文本链接</div>
+                    <div><b>内容为空：</b>未识别到可加工的正文内容</div>
+                  </div>
+                  <div class="flow-actions"><button id="retryUploadBtn">重新上传</button><button class="primary" id="retryParseBtn">重新解析</button></div>
+                </div>
+                <div class="import-ai-panel" id="importAiPanel">
+                  <div class="ai-process-title">✦<br><b>AI 自动加工</b></div>
+                  <div class="sub" style="text-align:center">AI 正在帮你完成从输入到知识沉淀的全过程</div>
+                  <div class="ai-process-grid">
+                    <div class="card ai-process-card"><div class="process-icon"><svg viewBox="0 0 24 24"><path d="M7 3h7l4 4v14H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z"></path><path d="M14 3v5h5"></path><path d="M8 17c2.2-3.2 4.4-3.2 6.6 0"></path><path d="M16.5 13.5h.01"></path><path d="M20 13l.45 1 .95.45-.95.45-.45 1-.45-1-.95-.45.95-.45.45-1Z"></path></svg></div><div class="title">总结内容</div><span>已完成</span><p id="summaryMini">正在生成摘要...</p></div>
+                    <div class="card ai-process-card"><div class="process-icon"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"></rect><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"></rect><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"></rect><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"></rect></svg></div><div class="title">形成知识卡片</div><span>已完成</span><p id="cardsMini">正在提取知识点...</p></div>
+                    <div class="card ai-process-card"><div class="process-icon"><svg viewBox="0 0 24 24"><path d="M3.5 8.5h7l1.7 2H20a2 2 0 0 1 2 2v5.5a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.5l1.8 2H20"></path></svg></div><div class="title">分类归档</div><span>处理中</span><p id="archiveMini">正在识别主题并分类...</p></div>
+                    <div class="card ai-process-card"><div class="process-icon"><svg viewBox="0 0 24 24"><path d="M6 3h12a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z"></path><path d="M8 7h7"></path><path d="M8 11h5"></path><path d="M8 15h4"></path><path d="m14.5 16.5 2 2 4-4"></path></svg></div><div class="title">加入复习</div><span>即将完成</span><p id="reviewMini">正在生成复习计划...</p></div>
+                  </div>
+                  <div class="agent-note">AI 加工完成后，你可以预览并确认结果。确认内容正确、结构清晰，便于复习与应用。</div>
+                </div>
+                <div class="import-confirm-panel" id="importConfirmPanel">
+                  <div class="confirm-tip">✦ AI 已完成加工，请确认以下内容无误后入库</div>
+                  <div class="card"><div class="section-title">知识预览</div><div class="knowledge-preview-card" id="knowledgePreviewCard"></div></div>
+                  <div class="card">
+                    <div class="section-title">确认后执行</div>
+                    <div class="agent-chain">
+                      <div class="agent-chain-row"><b>1</b><div><div class="title">保存知识卡片</div><div class="muted">摘要、知识点、标签和来源文本写入本地知识库。</div></div></div>
+                      <div class="agent-chain-row"><b>2</b><div><div class="title">建立 RAG 片段索引</div><div class="muted">Agent 将来源内容切成可召回片段，用于后续语义检索。</div></div></div>
+                      <div class="agent-chain-row"><b>3</b><div><div class="title">支持知识库问答</div><div class="muted">用户提问时，Agent 会返回回答和引用来源片段。</div></div></div>
+                    </div>
+                  </div>
+                  <div class="card"><div class="section-title">AI 建议关联</div><div class="related-list" id="relatedList"></div></div>
+                  <details class="json-box"><summary>查看 Agent JSON 输出</summary><pre id="agentJson"></pre></details>
+                  <div class="flow-actions"><button id="adjustImportBtn">重新调整</button><button class="primary" id="confirmImportBtn">确认入库</button></div>
+                </div>
+              </div>
+              <div class="top">
+                <div><h1>导入内容</h1><div class="sub">将知识快速导入，交给 AI 帮你整理</div></div>
+                <div class="avatar">＋</div>
+              </div>
+              <div class="quick-grid">
+                <div class="quick-card" data-import="文档导入"><div class="quick-icon">文</div><div class="title">文档导入</div><div class="muted">支持 PDF、Word、PPT 等格式</div></div>
+                <div class="quick-card" data-import="链接导入"><div class="quick-icon">链</div><div class="title">链接导入</div><div class="muted">粘贴网页链接，AI 提取要点</div></div>
+                <div class="quick-card" data-import="截图导入"><div class="quick-icon">图</div><div class="title">截图导入</div><div class="muted">智能识别截图内容，提炼关键信息</div></div>
+                <div class="quick-card" data-import="微信导入"><div class="quick-icon">微</div><div class="title">微信导入</div><div class="muted">从微信聊天或公众号中导入内容</div></div>
+              </div>
+              <div class="section-title">导入流程</div>
+              <div class="steps"><div class="step on">选择来源</div><div class="step">加工</div><div class="step">结果确认</div></div>
+              <div class="field"><input id="sourceName" value="面试资料摘录" aria-label="来源名称"></div>
+              <div class="field">
+                <textarea id="sourceText">AI知识管理助手需要支持多源导入、自动摘要、标签分类、知识卡片生成、语义检索和主动复习。用户导入内容后，AI先给出结构化结果，用户确认后再入库，避免错误信息污染个人知识库。</textarea>
+              </div>
+              <button class="primary" id="processBtn" style="width:100%">开始解析与 AI 加工</button>
+              <div class="result-panel" id="resultPanel">
+                <div class="section-title">AI 加工结果确认</div>
+                <div class="card soft">
+                  <div class="kicker">已识别标题</div>
+                  <div class="title" id="aiTitle">产品经理面试题总结</div>
+                  <div class="muted">正在识别文档结构，提取关键信息。</div>
+                  <span class="tag">多源导入</span><span class="tag">语义检索</span><span class="tag">主动复习</span>
+                </div>
+                <div class="timeline">
+                  <div class="timeline-row"><div class="dot">1</div><div><div class="title">解析内容</div><div class="muted">提取成功，正文片段已生成。</div></div></div>
+                  <div class="timeline-row"><div class="dot">2</div><div><div class="title">AI 加工</div><div class="muted">生成摘要、标签和知识卡片。</div></div></div>
+                  <div class="timeline-row"><div class="dot pending">3</div><div><div class="title">确认入库</div><div class="muted">确认后写入个人知识库。</div></div></div>
+                </div>
+                <div class="field"><textarea id="summaryText">- 支持多源导入并统一解析为可加工文本。
+- AI 生成摘要、标签、分类和复习卡片。
+- 用户确认后入库，后续可搜索、问答和复习。</textarea></div>
+                <button class="primary" id="saveBtn" style="width:100%">确认入库</button>
+              </div>
+            </section>
+
+            <section class="screen-page" data-page="library">
+              <div class="top">
+                <div><h1>知识库</h1><div class="sub">Agent 分块入库 + 语义检索</div></div>
+                <button class="library-manage-btn" id="libraryManageBtn">管理</button>
+              </div>
+              <div class="card soft">
+                <div class="row">
+                  <div><div class="title">RAG 索引状态</div><div class="muted" id="ragIndexText">已建立 4 条知识、16 个可召回片段</div></div>
+                  <div class="score">ON<div class="muted">Agent</div></div>
+                </div>
+              </div>
+              <div class="field"><input id="searchInput" placeholder="搜索 RAG、复习计划、面试..." aria-label="搜索"></div>
+              <button class="primary" data-go="qa" style="width:100%;margin-bottom:10px">基于知识库提问</button>
+              <div id="libraryList"></div>
+            </section>
+
+            <section class="screen-page" data-page="qa">
+              <div class="top" style="align-items:flex-start">
+                <button class="flow-back" id="qaBackBtn" aria-label="返回">‹</button>
+                <div style="flex:1"><h1>Agent 问答</h1><div class="sub">自主检索个人知识库，回答可追溯</div></div>
+                <div class="avatar">AI</div>
+              </div>
+              <div class="field"><input id="question" placeholder="输入你想问的问题" aria-label="问题"></div>
+              <button class="primary" id="answerBtn" style="width:100%">生成回答</button>
+              <div class="card soft" id="answerCard" style="display:none;margin-top:12px">
+                <div class="title">Agent 回答</div>
+                <div class="muted answer" id="agentAnswerText">正在基于个人知识库生成回答...</div>
+              </div>
+              <div id="ragResultPanel" style="display:none">
+                <div class="section-title">引用来源</div>
+                <div class="card" id="agentSources"></div>
+                <div class="section-title">AI 扩展建议</div>
+                <div id="agentSuggestions"></div>
+                <button class="primary" id="confirmSuggestionBtn" style="width:100%;margin-top:10px">确认扩展建议入库</button>
+              </div>
+            </section>
+
+            <section class="screen-page" data-page="review">
+              <div class="review-nav">
+                <div class="review-title-top">今日重点复习</div>
+              </div>
+              <div class="review-task-view" id="reviewTaskView">
+                <div class="review-filter-row" id="reviewFilterRow">
+                  <button class="review-filter active" data-review-filter="all">全部(18)</button>
+                  <button class="review-filter" data-review-filter="high">高优先级(6)</button>
+                  <button class="review-filter" data-review-filter="weak">待加强(5)</button>
+                </div>
+                <div class="review-task-list" id="reviewTaskList">
+                  <div class="review-task-item" data-level="high"><div class="review-task-item-head"><span class="level-pill level-high">高优先级</span><span class="state-pill state-forget">即将遗忘</span></div><div class="title">费曼学习法的核心概念</div><div class="muted">上次复习：3 天前</div></div>
+                  <div class="review-task-item" data-level="high"><div class="review-task-item-head"><span class="level-pill level-high">高优先级</span><span class="state-pill state-forget">即将遗忘</span></div><div class="title">主动回忆的核心概念</div><div class="muted">上次复习：5 天前</div></div>
+                  <div class="review-task-item" data-level="high"><div class="review-task-item-head"><span class="level-pill level-high">高优先级</span><span class="state-pill state-forget">即将遗忘</span></div><div class="title">RAG 产品设计流程</div><div class="muted">上次复习：6 天前</div></div>
+                  <div class="review-task-item" data-level="high"><div class="review-task-item-head"><span class="level-pill level-high">高优先级</span><span class="state-pill state-forget">即将遗忘</span></div><div class="title">Prompt 评估指标</div><div class="muted">上次复习：8 天前</div></div>
+                  <div class="review-task-item" data-level="high"><div class="review-task-item-head"><span class="level-pill level-high">高优先级</span><span class="state-pill state-forget">即将遗忘</span></div><div class="title">用户痛点识别方法</div><div class="muted">上次复习：9 天前</div></div>
+                  <div class="review-task-item" data-level="high"><div class="review-task-item-head"><span class="level-pill level-high">高优先级</span><span class="state-pill state-forget">即将遗忘</span></div><div class="title">面试 STAR 表达法</div><div class="muted">上次复习：12 天前</div></div>
+                  <div class="review-task-item" data-level="weak"><div class="review-task-item-head"><span class="level-pill level-mid">待加强</span><span class="state-pill state-weak">需要加强</span></div><div class="title">边际效用递减规律</div><div class="muted">上次复习：7 天前</div></div>
+                  <div class="review-task-item" data-level="weak"><div class="review-task-item-head"><span class="level-pill level-mid">待加强</span><span class="state-pill state-weak">需要加强</span></div><div class="title">需求优先级排序</div><div class="muted">上次复习：4 天前</div></div>
+                  <div class="review-task-item" data-level="weak"><div class="review-task-item-head"><span class="level-pill level-mid">待加强</span><span class="state-pill state-weak">需要加强</span></div><div class="title">AARRR 增长模型</div><div class="muted">上次复习：6 天前</div></div>
+                  <div class="review-task-item" data-level="weak"><div class="review-task-item-head"><span class="level-pill level-mid">待加强</span><span class="state-pill state-weak">需要加强</span></div><div class="title">竞品分析维度</div><div class="muted">上次复习：3 天前</div></div>
+                  <div class="review-task-item" data-level="weak"><div class="review-task-item-head"><span class="level-pill level-mid">待加强</span><span class="state-pill state-weak">需要加强</span></div><div class="title">数据漏斗定位</div><div class="muted">上次复习：5 天前</div></div>
+                  <div class="review-task-item" data-level="ok"><div class="review-task-item-head"><span class="level-pill level-ok">已掌握</span><span class="state-pill state-ok">巩固记忆</span></div><div class="title">SWOT 分析模型</div><div class="muted">上次复习：1 天前</div></div>
+                  <div class="review-task-item" data-level="ok"><div class="review-task-item-head"><span class="level-pill level-ok">已掌握</span><span class="state-pill state-ok">巩固记忆</span></div><div class="title">用户旅程地图</div><div class="muted">上次复习：1 天前</div></div>
+                  <div class="review-task-item" data-level="ok"><div class="review-task-item-head"><span class="level-pill level-ok">已掌握</span><span class="state-pill state-ok">巩固记忆</span></div><div class="title">北极星指标</div><div class="muted">上次复习：2 天前</div></div>
+                  <div class="review-task-item" data-level="ok"><div class="review-task-item-head"><span class="level-pill level-ok">已掌握</span><span class="state-pill state-ok">巩固记忆</span></div><div class="title">MVP 验证路径</div><div class="muted">上次复习：2 天前</div></div>
+                  <div class="review-task-item" data-level="ok"><div class="review-task-item-head"><span class="level-pill level-ok">已掌握</span><span class="state-pill state-ok">巩固记忆</span></div><div class="title">信息架构设计</div><div class="muted">上次复习：1 天前</div></div>
+                  <div class="review-task-item" data-level="ok"><div class="review-task-item-head"><span class="level-pill level-ok">已掌握</span><span class="state-pill state-ok">巩固记忆</span></div><div class="title">留存率分析</div><div class="muted">上次复习：2 天前</div></div>
+                  <div class="review-task-item" data-level="ok"><div class="review-task-item-head"><span class="level-pill level-ok">已掌握</span><span class="state-pill state-ok">巩固记忆</span></div><div class="title">可用性测试流程</div><div class="muted">上次复习：1 天前</div></div>
+                </div>
+                <div class="review-complete-message" id="reviewCompleteMessage">今日已复习完毕~超级棒！</div>
+                <div class="review-fixed-action" id="reviewFixedAction">
+                  <button class="primary" id="startReviewBtn">开始复习</button>
+                </div>
+              </div>
+              <div class="review-study-view" id="reviewStudyView">
+                <button class="review-back-btn" id="reviewBackBtn" aria-label="返回复习列表">‹</button>
+                <div class="card review-progress-card">
+                  <div class="review-progress-head">
+                    <span>第 <b id="reviewIndex">1</b> / <b id="reviewTotal">18</b> 条</span>
+                    <span id="reviewPercent">6%</span>
+                  </div>
+                  <div class="progress-track"><div class="progress-fill" id="reviewProgressFill"></div></div>
+                </div>
+                <div class="review-priority">
+                  <svg id="reviewPriorityIcon" viewBox="0 0 24 24"><path d="M3 11 12 4l9 7"></path><path d="M5 10v9h5v-5h4v5h5v-9"></path></svg>
+                  <span id="reviewPriorityLabel" style="color:#ff5a4f">高优先级</span><span id="reviewPriorityState">· 今日重点复习</span>
+                </div>
+                <div class="card review-main-card">
+                  <div class="review-main-title" id="reviewCardTitle">费曼学习法的核心概念</div>
+                  <div class="review-question">
+                    <div>请用自己的话解释：</div>
+                    <div id="reviewQuestionText">什么是费曼学习法？它的核心步骤是什么？</div>
+                  </div>
+                  <div class="review-response-space empty" id="reviewResponse"></div>
+                </div>
+                <div class="memory-grid" id="memoryGrid">
+                  <button class="memory-btn no" data-review="不会"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M8 10h.01M16 10h.01M8 16c1.2-1 2.5-1.5 4-1.5s2.8.5 4 1.5"></path></svg><span>不会</span><small>完全不记得</small></button>
+                  <button class="memory-btn fuzzy" data-review="模糊"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M8 10h.01M16 10h.01M8 15h8"></path></svg><span>模糊</span><small>完全不记得</small></button>
+                  <button class="memory-btn known" data-review="掌握" id="knownReviewBtn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M8 10h.01M16 10h.01M8 15c1.2 1 2.5 1.5 4 1.5s2.8-.5 4-1.5"></path></svg><span id="knownReviewText">掌握</span><small id="knownReviewHint">完全记得</small></button>
+                </div>
+                <button class="primary next-question-btn" id="nextQuestionBtn">下一题</button>
+              </div>
+              <div class="checkin-view" id="checkinView">
+                <div class="checkin-hero">
+                  <div class="checkin-badge">✓</div>
+                  <div class="checkin-title">今日复习完毕，超级棒！</div>
+                  <div class="checkin-sub" id="checkinSummary">已完成今日 18 条复习内容。</div>
+                </div>
+                <button class="primary" id="finishHomeBtn" style="width:100%;margin-top:16px">返回首页</button>
+                <button class="primary" id="wrongReviewBtn" style="width:100%;margin-top:10px;display:none">今日错题复习</button>
+              </div>
+            </section>
+
+            <section class="screen-page" data-page="profile">
+              <div class="profile-head">
+                <div class="profile-avatar"><svg viewBox="0 0 64 64"><path d="M15 43c-5-9-2-25 8-31 8-5 23-2 28 9 4 9 2 17-2 22"></path><path d="M18 42c2 4 7 7 14 7s12-3 14-7"></path><path d="M18 31c4 0 5 6 1 8-5 2-9-5-4-9"></path><path d="M46 31c-4 0-5 6-1 8 5 2 9-5 4-9"></path><path d="M21 30c6-3 6-12 10-16 0 8 4 13 13 16"></path><path d="M29 18c4-2 10-2 16 1"></path><path d="M24 34h.01M40 34h.01"></path><path d="M30 39c2 2 5 2 7 0"></path><path d="M24 38c-2 1-3 2-4 3M44 38c2 1 3 2 4 3"></path><path d="M26 48c-5 2-10 6-13 11M38 48c5 2 10 6 13 11"></path></svg></div>
+                <div class="profile-info">
+                  <div><span class="profile-name">小知同学</span><span class="profile-badge"><svg viewBox="0 0 24 24"><path d="M4 18h16"></path><path d="M5 17V8l4 4 3-6 3 6 4-4v9"></path><path d="M6 5h.01M12 3h.01M18 5h.01"></path></svg></span></div>
+                  <div class="sub">终身学习者，持续探索知识的边界</div>
+                </div>
+                <div class="profile-arrow">›</div>
+              </div>
+              <div class="vip-card">
+                <div class="vip-icon">♕</div>
+                <div><div class="title">VIP 会员</div><div class="muted">享受更多 AI 加工次数和高级功能</div></div>
+                <button>去升级 ›</button>
+              </div>
+              <div class="profile-stats card">
+                <div data-profile-go="library"><div class="profile-stat-icon green"><svg viewBox="0 0 24 24"><path d="M4 5h6a3 3 0 0 1 3 3v11a3 3 0 0 0-3-3H4z"></path><path d="M20 5h-6a3 3 0 0 0-3 3v11a3 3 0 0 1 3-3h6z"></path></svg></div><b id="profileKnowledgeCount">0</b><span>知识卡片</span></div>
+                <div data-profile-go="review"><div class="profile-stat-icon red"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"></rect><path d="M8 3v4M16 3v4M8 12h8M8 16h5"></path></svg></div><b id="profileReviewPlanCount">0</b><span>复习计划</span></div>
+                <div><div class="profile-stat-icon blue"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l4 2"></path></svg></div><b id="profileHistoryCount">0</b><span>学习历史</span></div>
+                <div><div class="profile-stat-icon purple"><svg viewBox="0 0 24 24"><path d="m12 3 3 6 6 .9-4.5 4.3 1.1 6.1L12 17.2 6.4 20.3l1.1-6.1L3 9.9 9 9z"></path></svg></div><b id="profileFavoriteCount">8</b><span>收藏</span></div>
+              </div>
+              <div class="profile-menu card">
+                <div class="profile-menu-item"><span style="color:var(--green)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l4 2"></path></svg></span>学习历史</div>
+                <div class="profile-menu-item"><span style="color:#20a7ff"><svg viewBox="0 0 24 24"><path d="M12 3v12"></path><path d="m7 10 5 5 5-5"></path><path d="M5 20h14"></path></svg></span>离线下载</div>
+                <div class="profile-menu-item"><span style="color:#f28b2f"><svg viewBox="0 0 24 24"><path d="M4 12v7h16v-7"></path><path d="M12 15V3"></path><path d="m7 8 5-5 5 5"></path></svg></span>我的分享</div>
+                <div class="profile-menu-item"><span style="color:#9a56dd"><svg viewBox="0 0 24 24"><path d="M4 7h16"></path><path d="M10 11v6M14 11v6"></path><path d="M6 7l1 14h10l1-14"></path><path d="M9 7V4h6v3"></path></svg></span>回收站</div>
+                <div class="profile-divider"></div>
+                <div class="profile-menu-item"><span style="color:#20a7ff"><svg viewBox="0 0 24 24"><path d="M4 5h16v12H7l-3 3z"></path><path d="M8 9h8M8 13h5"></path></svg></span>帮助与反馈</div>
+                <div class="profile-menu-item"><span style="color:var(--green)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M12 10v6"></path><path d="M12 7h.01"></path></svg></span>关于我们</div>
+                <div class="profile-menu-item"><span style="color:#828882"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2 3.4-.2-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V22H9.3v-.5a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.2.1-2-3.4.1-.1A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.3-1.2H3v-4h.3a1.7 1.7 0 0 0 1.3-1.2 1.7 1.7 0 0 0-.3-1.9l-.1-.1 2-3.4.2.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.5V2h5.4v.5a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.2-.1 2 3.4-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.3 1.2h.3v4h-.3A1.7 1.7 0 0 0 19.4 15Z"></path></svg></span>设置</div>
+              </div>
+              <div class="study-data-card card">
+                <div class="study-data-icon"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9h-9z"></path><path d="M12 3v9h9"></path></svg></div>
+                <div><div class="title">学习数据</div><div class="muted">本周学习时长6.5小时，超过85%的用户</div></div>
+              </div>
+            </section>
+          </div>
+
+          <nav class="tabs" id="bottomTabs" aria-label="底部导航">
+            <button class="tab active" data-tab="home">首页</button>
+            <button class="tab" data-tab="review">复习</button>
+            <button class="tab add" data-tab="import" aria-label="导入">+</button>
+            <button class="tab" data-tab="library">知识库</button>
+            <button class="tab" data-tab="profile">我的</button>
+          </nav>
+          <div class="import-sheet-mask" id="importSheetMask" aria-hidden="true">
+            <div class="import-sheet" role="dialog" aria-modal="true" aria-label="导入内容">
+              <div class="sheet-handle"></div>
+              <button class="sheet-close" id="closeImportSheet" aria-label="关闭">×</button>
+              <div class="sheet-title">导入内容</div>
+              <div class="sheet-sub">将知识快速导入，交给AI帮你整理</div>
+              <div class="sheet-kicker"><span>✦</span>快速导入</div>
+              <div class="sheet-import-grid">
+                <button class="sheet-import-card" data-import="文档导入">
+                  <div class="sheet-import-icon" style="background:#d8f0ff;color:#2aa7e4">▤</div>
+                  <div><div class="title">文档导入</div><div class="muted">支持 PDF、Word、PPT 等格式</div></div>
+                </button>
+                <button class="sheet-import-card" data-import="链接导入">
+                  <div class="sheet-import-icon" style="background:#f1e7ff;color:#9a56dd">🔗</div>
+                  <div><div class="title">链接导入</div><div class="muted">粘贴网页链接，AI 提取要点</div></div>
+                </button>
+                <button class="sheet-import-card" data-import="截图导入">
+                  <div class="sheet-import-icon" style="background:#ffe7cf;color:#f28b2f">▣</div>
+                  <div><div class="title">截图导入</div><div class="muted">识别截图内容，提炼关键信息</div></div>
+                </button>
+                <button class="sheet-import-card" data-import="微信导入">
+                  <div class="sheet-import-icon" style="background:#e3f8d8;color:#55ad28">☏</div>
+                  <div><div class="title">微信导入</div><div class="muted">从聊天、公众号导入内容</div></div>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="related-sheet-mask" id="relatedSheetMask" aria-hidden="true">
+            <div class="related-sheet" role="dialog" aria-modal="true" aria-label="关联知识">
+              <div class="sheet-handle"></div>
+              <button class="sheet-close" id="closeRelatedSheet" aria-label="关闭">×</button>
+              <div class="sheet-title">关联知识</div>
+              <div class="sheet-sub" id="relatedSheetSub">基于标签与语义相似度推荐</div>
+              <div id="relatedSheetList"></div>
+            </div>
+          </div>
+        </div>
+        <div class="home-indicator"></div>
+        <div class="toast" id="toast"><div class="check">✓</div><div id="toastText">已添加到知识库</div></div>
+      </div>
+    </section>
+  </main>
+  <script>
+    const knowledge = [
+      { title: "主动回忆的核心概念", brief: "主动回忆是一种比反复阅读更有效的学习方法，核心是主动从记忆中提取答案。", tags: ["主动回忆", "间隔复习", "遗忘曲线"], mastery: 45, sourceName: "主动回忆与间隔复习.md", chunks: ["主动回忆是一种比反复阅读更有效的学习方法，核心是主动从记忆中提取答案。", "间隔复习利用遗忘曲线，在即将遗忘前安排复习任务，可以提高长期记忆效果。"] },
+      { title: "费曼学习法", brief: "用简单语言解释复杂概念，通过讲给别人听发现理解漏洞。", tags: ["费曼", "复习", "面试"], mastery: 45, sourceName: "学习方法笔记.md", chunks: ["费曼学习法强调用简单语言解释复杂概念。", "如果讲不清楚，就回到资料中查漏补缺，最后用更清晰的语言重新表达。"] },
+      { title: "RAG 产品设计流程", brief: "包括文档解析、切片、召回、重排、生成回答和来源追溯。", tags: ["RAG", "AI产品", "来源追溯"], mastery: 62, sourceName: "AI产品经理知识.md", chunks: ["RAG 流程通常包括文档解析、切片、向量化、召回、重排和生成回答。", "产品设计时应区分已有知识库内容和 AI 扩展建议，并通过来源追溯降低幻觉风险。"] },
+      { title: "AARRR 增长模型", brief: "围绕获取、激活、留存、收入、传播定位产品增长问题。", tags: ["增长", "指标", "漏斗"], mastery: 70, sourceName: "用户增长AARRR模型.md", chunks: ["AARRR 模型包括获取、激活、留存、收入和传播五个环节。", "用户增长产品经理会围绕漏斗数据定位问题，再设计实验和指标验证改进效果。"] }
+    ];
+    const pages = [...document.querySelectorAll(".screen-page")];
+    const tabs = [...document.querySelectorAll(".tab")];
+    const bottomTabs = document.getElementById("bottomTabs");
+    const importSheetMask = document.getElementById("importSheetMask");
+    const content = document.querySelector(".content");
+    const reviewCards = [...document.querySelectorAll("#reviewCarousel .review-card")];
+    const reviewDots = [...document.querySelectorAll("#reviewDots .dot-page")];
+    const reviewFilters = [...document.querySelectorAll("[data-review-filter]")];
+    const reviewTaskItems = [...document.querySelectorAll(".review-task-item")];
+    const reviewDeck = [
+      { title: "费曼学习法的核心概念", question: "什么是费曼学习法？它的核心步骤是什么？", tags: "费曼、输出、检查、简化", summary: "用简单语言解释复杂概念，通过讲给别人听发现理解漏洞，再回到资料补全并简化表达。", answer: "费曼学习法是用简单语言解释复杂概念，并通过输出发现理解漏洞。核心步骤是选择概念、尝试讲清楚、找出卡住的地方、回到资料补全并再次简化表达。", red: ["简单语言解释复杂概念", "输出发现理解漏洞", "补全并再次简化"] },
+      { title: "主动回忆的核心概念", question: "为什么主动回忆比反复阅读更有效？", tags: "主动回忆、自测、提取练习", summary: "主动从记忆中提取答案，可以暴露掌握漏洞，并让知识更容易进入长期记忆。", answer: "主动回忆要求大脑主动提取答案，而不是被动阅读。它能暴露没有真正掌握的部分，并通过提取练习强化长期记忆。", red: ["主动提取答案", "暴露没有真正掌握的部分", "强化长期记忆"] },
+      { title: "RAG 产品设计流程", question: "RAG 流程通常包含哪些关键步骤？", tags: "文档解析、切片、召回、重排、来源追溯", summary: "RAG 把知识库内容召回给模型使用，重点是让回答有依据、可追溯、可验证。", answer: "RAG 通常包括文档解析、切片、向量化、召回、重排、生成回答和来源追溯。产品设计时要关注命中率、可解释性和幻觉风险。", red: ["文档解析", "召回", "来源追溯"] },
+      { title: "Prompt 评估指标", question: "如何判断一个 Prompt 是否有效？", tags: "准确性、稳定性、可控性、成本", summary: "Prompt 评估要看输出是否满足任务目标，也要关注不同输入下的一致性。", answer: "有效 Prompt 应该让模型稳定输出符合目标的结果。常见评估维度包括准确性、完整性、格式一致性、可控性、响应成本和用户满意度。", red: ["稳定输出", "准确性", "格式一致性"] },
+      { title: "用户痛点识别方法", question: "如何判断一个需求背后是否存在真实痛点？", tags: "场景、频率、强度、替代方案", summary: "真实痛点通常出现在高频或高强度场景中，并且用户愿意付出成本解决。", answer: "判断真实痛点需要回到用户场景，观察问题发生频率、影响强度、现有替代方案和用户愿意付出的成本。只听用户说想要什么是不够的。", red: ["用户场景", "发生频率", "愿意付出的成本"] },
+      { title: "面试 STAR 表达法", question: "STAR 法则在项目经历表达中如何使用？", tags: "Situation、Task、Action、Result", summary: "STAR 帮助把经历讲成有背景、有行动、有结果的完整故事。", answer: "STAR 分别是情境、任务、行动、结果。表达项目经历时，先说明背景和目标，再突出自己采取的关键行动，最后用结果和数据证明价值。", red: ["情境", "行动", "结果"] },
+      { title: "边际效用递减规律", question: "什么是边际效用递减？产品设计中如何理解？", tags: "边际效用、用户价值、激励", summary: "同一刺激持续增加时，新增一次带来的满足感通常会下降。", answer: "边际效用递减指用户从连续增加的同类收益中获得的新增满足感逐渐下降。产品设计中，奖励、提醒和功能曝光都要避免过度使用导致疲劳。", red: ["新增满足感逐渐下降", "避免过度使用"] },
+      { title: "需求优先级排序", question: "如何给多个产品需求排序？", tags: "价值、成本、风险、紧急度", summary: "需求排序要同时看用户价值、业务收益、实现成本和风险。", answer: "需求优先级可综合用户价值、业务目标、实现成本、风险和紧急程度判断。常见方法包括 RICE、KANO 和影响力/成本矩阵。", red: ["用户价值", "实现成本", "风险"] },
+      { title: "AARRR 增长模型", question: "AARRR 模型包含哪五个环节？", tags: "获取、激活、留存、收入、传播", summary: "AARRR 用漏斗方式观察用户从进入产品到产生传播的全过程。", answer: "AARRR 包括获取、激活、留存、收入和传播。它帮助团队定位增长漏斗中的薄弱环节，再设计实验进行优化。", red: ["获取", "留存", "传播"] },
+      { title: "竞品分析维度", question: "竞品分析应该从哪些维度展开？", tags: "目标用户、功能、体验、商业模式", summary: "竞品分析不是罗列功能，而是判断对方如何满足用户需求。", answer: "竞品分析可从目标用户、核心场景、功能结构、交互体验、商业模式、增长策略和差异化优势展开，重点是形成可行动的产品判断。", red: ["核心场景", "交互体验", "差异化优势"] },
+      { title: "数据漏斗定位", question: "如何通过数据漏斗定位问题？", tags: "转化率、流失节点、实验", summary: "漏斗分析关注每一步转化，从异常流失节点找优化机会。", answer: "数据漏斗定位问题时，先拆分关键路径，再观察每一步转化率和流失率。异常节点通常是体验、动机或供给不足的信号。", red: ["关键路径", "转化率", "异常节点"] },
+      { title: "SWOT 分析模型", question: "SWOT 四个象限分别是什么？", tags: "优势、劣势、机会、威胁", summary: "SWOT 用于从内外部视角分析策略环境。", answer: "SWOT 包括优势、劣势、机会和威胁。优势与劣势偏内部能力，机会与威胁偏外部环境。", red: ["优势", "劣势", "机会", "威胁"] },
+      { title: "用户旅程地图", question: "用户旅程地图的价值是什么？", tags: "触点、情绪、痛点、机会点", summary: "旅程地图能把用户在不同触点的行为、情绪和问题可视化。", answer: "用户旅程地图帮助团队看清用户从产生需求到完成目标的全过程，识别关键触点、情绪波动、痛点和优化机会。", red: ["关键触点", "情绪波动", "优化机会"] },
+      { title: "北极星指标", question: "什么样的指标适合作为北极星指标？", tags: "核心价值、长期增长、可行动", summary: "北极星指标应代表产品给用户创造的核心价值。", answer: "好的北极星指标能反映用户获得的核心价值，并与长期增长相关，同时能指导团队行动。它不应只是短期流量指标。", red: ["核心价值", "长期增长", "指导团队行动"] },
+      { title: "MVP 验证路径", question: "MVP 的核心目的是什么？", tags: "最小可行、假设验证、反馈", summary: "MVP 不是做一个简陋产品，而是用最小成本验证关键假设。", answer: "MVP 的核心目的是用最小成本验证最关键的产品假设，尽快获得真实用户反馈，再决定是否继续投入。", red: ["最小成本", "关键假设", "真实用户反馈"] },
+      { title: "信息架构设计", question: "信息架构设计要解决什么问题？", tags: "分类、导航、层级、查找效率", summary: "信息架构关注内容如何组织，让用户能快速理解和找到目标。", answer: "信息架构设计要解决内容分类、层级关系、导航路径和查找效率问题，让用户知道在哪里、能去哪里、如何完成任务。", red: ["内容分类", "导航路径", "查找效率"] },
+      { title: "留存率分析", question: "分析留存率时要注意什么？", tags: " cohort、周期、行为分层", summary: "留存分析需要按用户群和时间周期拆开看，避免平均值掩盖问题。", answer: "留存率分析要明确统计周期，按用户来源、首日行为和关键特征分群观察。只看整体平均值容易掩盖真实问题。", red: ["统计周期", "分群观察", "平均值"] },
+      { title: "可用性测试流程", question: "一次可用性测试通常怎么做？", tags: "任务设计、观察、记录、改进", summary: "可用性测试通过观察用户完成任务的过程，发现体验阻碍。", answer: "可用性测试通常包括明确目标、设计任务、招募用户、观察操作、记录问题、分析原因并形成改进方案。", red: ["设计任务", "观察操作", "改进方案"] }
+    ];
+    let currentReview = 0;
+    let currentReviewPosition = 0;
+    let activeReviewList = reviewDeck.map((_, index) => index);
+    let reviewMode = "daily";
+    let fuzzyCount = 0;
+    let reviewResults = [];
+    let dailyReviewFinished = false;
+    const yesterdayMastery = 72;
+    const isFirstReviewDay = false;
+    const checkinDays = 7;
+    const streakDays = 5;
+    const todayReviewCount = () => reviewDeck.length;
+    const importState = {
+      type: "文档导入",
+      step: 1,
+      sourceName: "产品经理面试题总结.pdf",
+      raw: "",
+      result: null
+    };
+    let libraryManageMode = false;
+    function showPage(name) {
+      if (name === "review") {
+        showReviewTask();
+      } else if (name === "home") {
+        renderHomeState();
+      }
+      if (name !== "review" && bottomTabs) bottomTabs.classList.remove("is-hidden");
+      pages.forEach(p => p.classList.toggle("active", p.dataset.page === name));
+      tabs.forEach(t => t.classList.toggle("active", t.dataset.tab === name));
+      content.scrollTop = 0;
+    }
+    function openImportSheet() {
+      if (!importSheetMask) return;
+      importSheetMask.classList.add("show");
+      importSheetMask.setAttribute("aria-hidden", "false");
+    }
+    function closeImportSheet() {
+      if (!importSheetMask) return;
+      importSheetMask.classList.remove("show");
+      importSheetMask.setAttribute("aria-hidden", "true");
+    }
+    function importMeta(type = importState.type) {
+      const map = {
+        "文档导入": { icon: "▤", color: "#2aa7e4", bg: "#d8f0ff", name: "产品经理面试题总结.pdf", hint: "粘贴文档正文，或使用下方示例内容模拟 PDF / Word / PPT 导入。" },
+        "链接导入": { icon: "🔗", color: "#9a56dd", bg: "#f1e7ff", name: "https://example.com/product-notes", hint: "粘贴网页正文或链接内容，AI 会只基于可读取文本加工。" },
+        "截图导入": { icon: "▣", color: "#f28b2f", bg: "#ffe7cf", name: "学习笔记截图.png", hint: "粘贴 OCR 识别出的截图文字，模拟截图内容识别。" },
+        "微信导入": { icon: "☏", color: "#55ad28", bg: "#e3f8d8", name: "微信文章摘录", hint: "粘贴聊天记录或公众号正文，AI 会提炼可复习知识。" }
+      };
+      return map[type] || map["文档导入"];
+    }
+    function importSample(type) {
+      if (type === "链接导入") return "费曼学习法强调用简单语言解释复杂概念。学习者先选择一个概念，再尝试讲给别人听；如果讲不清楚，就回到资料中查漏补缺，最后用更清晰的语言重新表达。这个方法适合发现理解漏洞，也适合把抽象知识变成可复述的知识卡片。";
+      if (type === "截图导入") return "截图内容：主动回忆是一种高效复习方法。核心是先合上资料，主动从记忆中提取答案，再对照资料检查遗漏。相比反复阅读，主动回忆更容易暴露掌握盲区，并能强化长期记忆。";
+      if (type === "微信导入") return "公众号摘录：间隔复习的关键是不要在遗忘后才复习，也不要在刚学完时重复太多。可以根据掌握度安排复习时间：不熟悉的内容当天复习，模糊的内容 3 天后复习，已掌握的内容 7 天后巩固。";
+      return "产品经理面试题总结\n一、产品思维：需要说明用户是谁、场景是什么、问题为什么值得解决。\n二、需求分析：先判断痛点强度和出现频率，再评估业务价值、实现成本和风险。\n三、复盘表达：可以使用 STAR 法则，说明背景、任务、行动和结果。\n四、学习方法：费曼学习法可以帮助检查理解漏洞，用简单语言讲清楚概念。";
+    }
+    function renderImportSteps() {
+      const labels = ["选择来源", "解析内容", "AI 加工", "结果确认"];
+      document.getElementById("importSteps").innerHTML = labels.map((label, index) => {
+        const step = index + 1;
+        const cls = step < importState.step ? "done" : step === importState.step ? "active" : "";
+        return `<div class="flow-step ${cls}"><div class="circle">${step < importState.step ? "✓" : step}</div><div>${label}</div></div>`;
+      }).join("");
+    }
+    function renderImportFlow() {
+      const meta = importMeta();
+      renderImportSteps();
+      document.getElementById("importSourceCard").innerHTML = `
+        <div class="source-icon-large" style="background:${meta.bg};color:${meta.color}">${meta.icon}</div>
+        <div><div class="muted">已选择来源</div><div class="title">${importState.sourceName}</div><div class="muted">${importState.type} · 本地 Agent 解析</div></div>
+      `;
+      document.getElementById("flowSourceName").value = importState.sourceName;
+      document.getElementById("flowSourceText").value = importState.raw || importSample(importState.type);
+      document.getElementById("flowSourceText").placeholder = meta.hint;
+      document.getElementById("importInputPanel").style.display = "none";
+      document.getElementById("importParsePanel").style.display = importState.step === 2 ? "block" : "none";
+      document.getElementById("importFailPanel").style.display = importState.step === -1 ? "block" : "none";
+      document.getElementById("importAiPanel").style.display = importState.step === 3 ? "block" : "none";
+      document.getElementById("importConfirmPanel").style.display = importState.step === 4 ? "block" : "none";
+      content.scrollTop = 0;
+    }
+    function startImportFlow(type) {
+      const meta = importMeta(type);
+      importState.type = type;
+      importState.step = 2;
+      importState.sourceName = meta.name;
+      importState.raw = importSample(type);
+      importState.result = null;
+      closeImportSheet();
+      showPage("import");
+      renderImportFlow();
+      setTimeout(beginImportParse, 260);
+    }
+    function runKnowledgeAgent(raw) {
+      const text = raw.trim();
+      if (text.length < 24 || /解析失败|失败示例|空内容|unsupported/i.test(text)) {
+        throw new Error("内容不足或格式无法解析");
+      }
+      const chunks = text
+        .split(/[\n。！？；;]+/)
+        .map(s => s.replace(/^[一二三四五六七八九十\d、\.\s-]+/, "").trim())
+        .filter(s => s.length > 8);
+      const points = (chunks.length ? chunks : [text]).slice(0, 5);
+      const keywordMap = [
+        ["复习", "主动回忆", "间隔复习", "费曼"],
+        ["产品", "需求", "用户", "痛点"],
+        ["面试", "STAR", "表达", "复盘"],
+        ["AI", "知识管理", "语义检索", "标签"],
+        ["增长", "指标", "漏斗", "留存"]
+      ];
+      const tags = [...new Set(keywordMap.flat().filter(k => text.includes(k)))].slice(0, 5);
+      if (!tags.length) tags.push("知识卡片", "学习方法", "复习计划");
+      const titleSource = points[0].replace(/[：:]/g, " ").slice(0, 18);
+      const cards = points.slice(0, Math.min(5, Math.max(3, points.length))).map((point, index) => ({
+        title: index === 0 ? titleSource : point.slice(0, 16),
+        explanation: point.length > 46 ? `${point.slice(0, 46)}...` : point,
+        tags: tags.slice(0, 3),
+        review_time: index === 0 ? "明日复习" : index < 3 ? "3 天后复习" : "7 天后复习"
+      }));
+      const sourceChunks = chunkForRag(text);
+      return {
+        source_type: importState.type,
+        source_name: importState.sourceName,
+        summary: points.slice(0, 3).join("；"),
+        knowledge_points: cards,
+        source_chunks: sourceChunks,
+        tags,
+        category: tags.includes("产品") || tags.includes("需求") ? "产品方法论" : "学习方法论",
+        archive: "学习卡片",
+        review_plan: cards[0]?.review_time || "明日复习",
+        related: ["主动回忆", "SWOT分析模型", "间隔复习"].filter(item => !tags.includes(item))
+      };
+    }
+    function chunkForRag(text) {
+      const chunks = text
+        .split(/[\n。！？；;]+/)
+        .map(item => item.replace(/^[一二三四五六七八九十\d、\.\s-]+/, "").trim())
+        .filter(item => item.length > 8);
+      return chunks.length ? chunks.slice(0, 6) : [text.slice(0, 120)];
+    }
+    function renderAgentResult(result) {
+      document.getElementById("summaryMini").textContent = result.summary.slice(0, 42);
+      document.getElementById("cardsMini").textContent = `已生成 ${result.knowledge_points.length} 张知识卡片`;
+      document.getElementById("archiveMini").textContent = `建议分类：${result.category}`;
+      document.getElementById("reviewMini").textContent = `加入明日复习计划`;
+      const first = result.knowledge_points[0];
+      document.getElementById("knowledgePreviewCard").innerHTML = `
+        <div class="title">${first.title}</div>
+        <div class="summary">${first.explanation}</div>
+        <div>${result.tags.slice(0, 3).map(tag => `<span class="tag">${tag}</span>`).join("")}</div>
+        <div style="height:1px;background:#e6ece1;margin:12px 0"></div>
+        <div class="muted"><b>分类：</b>${result.category}</div>
+        <div class="muted"><b>类别：</b>${result.archive}</div>
+        <div class="muted"><b>加入复习：</b><span style="color:var(--green);font-weight:900">${result.review_plan}</span></div>
+        <div class="rag-mini"><span>RAG 片段 ${result.source_chunks.length}</span><span>可语义检索</span><span>来源可追溯</span></div>
+      `;
+      document.getElementById("relatedList").innerHTML = result.related.map(item => `<span>${item}</span>`).join("");
+      document.getElementById("agentJson").textContent = JSON.stringify(result, null, 2);
+    }
+    function setAiProcessState(activeIndex) {
+      const labels = [...document.querySelectorAll(".ai-process-card span")];
+      labels.forEach((label, index) => {
+        label.className = "";
+        if (index < activeIndex) {
+          label.textContent = "已完成";
+        } else if (index === activeIndex) {
+          label.textContent = "处理中";
+          label.classList.add("processing");
+        } else {
+          label.textContent = "等待中";
+          label.classList.add("pending");
+        }
+      });
+    }
+    function setParseProgress(percent, label) {
+      document.getElementById("parsePercent").textContent = `${percent}%`;
+      document.getElementById("parseProgressFill").style.width = `${percent}%`;
+      document.getElementById("parseStatus").innerHTML = percent < 100
+        ? `<span class="parse-spinner"></span>${label}`
+        : `解析成功`;
+    }
+    function beginImportParse() {
+      importState.raw = importState.raw || importSample(importState.type);
+      try {
+        importState.result = runKnowledgeAgent(importState.raw);
+      } catch (error) {
+        importState.step = -1;
+        renderImportFlow();
+        return;
+      }
+      importState.step = 2;
+      renderImportFlow();
+      setParseProgress(18, "正在读取来源");
+      document.getElementById("importPreview").textContent = importState.raw.slice(0, 260);
+      setTimeout(() => setParseProgress(35, "正在识别文档结构"), 1200);
+      setTimeout(() => setParseProgress(68, "正在提取关键信息"), 2800);
+      setTimeout(() => setParseProgress(100, "解析成功"), 5000);
+      setTimeout(() => {
+        importState.step = 3;
+        renderImportFlow();
+        renderAgentResult(importState.result);
+        setAiProcessState(0);
+        setTimeout(() => setAiProcessState(1), 1600);
+        setTimeout(() => setAiProcessState(2), 3200);
+        setTimeout(() => setAiProcessState(3), 4800);
+        setTimeout(() => setAiProcessState(4), 6400);
+      }, 5200);
+      setTimeout(() => {
+        importState.step = 4;
+        renderImportFlow();
+        renderAgentResult(importState.result);
+      }, 13200);
+    }
+    function toast(text) {
+      const box = document.getElementById("toast");
+      document.getElementById("toastText").textContent = text;
+      box.classList.add("show");
+      setTimeout(() => box.classList.remove("show"), 1200);
+    }
+    function tagsHtml(tags) {
+      return tags.map(t => `<span class="tag">${t}</span>`).join("");
+    }
+    function renderLibrary(filter = "") {
+      const list = document.getElementById("libraryList");
+      const q = filter.trim().toLowerCase();
+      const rows = knowledge
+        .map((item, index) => ({ ...item, originalIndex: index }))
+        .filter(k => !q || k.title.toLowerCase().includes(q) || k.brief.toLowerCase().includes(q) || k.tags.join("").toLowerCase().includes(q));
+      list.innerHTML = rows.map(k => `
+        <div class="card library-card ${libraryManageMode ? "manage-mode" : ""}">
+          <div class="row">
+            <div><div class="title">${k.title}</div><div class="muted">${k.brief}</div></div>
+            <div class="score">${k.mastery}%<div class="muted">掌握度</div></div>
+          </div>
+          ${tagsHtml(k.tags)}
+          <div class="rag-mini"><span>RAG 可检索</span><span>${(k.chunks || []).length || 1} 个来源片段</span></div>
+          <div class="library-actions">
+            <button onclick="toast('已加入今日复习')">设为今日复习</button>
+            <button onclick="openRelatedSheet(${k.originalIndex})">关联知识</button>
+          </div>
+          <div class="library-manage-actions">
+            <button onclick="editKnowledge(${k.originalIndex})">编辑知识</button>
+            <button onclick="deleteKnowledge(${k.originalIndex})" style="color:#e23b2f;border-color:#ffd7d2">删除知识</button>
+          </div>
+        </div>
+      `).join("") || `<div class="card soft"><div class="title">没有找到相关知识</div><div class="muted">换个关键词试试，或先导入新资料。</div></div>`;
+      renderProfileStats();
+    }
+    function renderProfileStats() {
+      const knowledgeCount = document.getElementById("profileKnowledgeCount");
+      const reviewPlanCount = document.getElementById("profileReviewPlanCount");
+      const historyCount = document.getElementById("profileHistoryCount");
+      const favoriteCount = document.getElementById("profileFavoriteCount");
+      if (knowledgeCount) knowledgeCount.textContent = knowledge.length;
+      if (reviewPlanCount) reviewPlanCount.textContent = todayReviewCount();
+      if (historyCount) historyCount.textContent = reviewedScores().length;
+      if (favoriteCount) favoriteCount.textContent = 8;
+      const ragIndexText = document.getElementById("ragIndexText");
+      if (ragIndexText) ragIndexText.textContent = `已建立 ${knowledge.length} 条知识、${Math.max(knowledge.length * 4, 0)} 个可召回片段`;
+    }
+    function tokenize(text) {
+      return (text || "")
+        .toLowerCase()
+        .match(/[a-z0-9]+|[\u4e00-\u9fff]{2,}/g) || [];
+    }
+    function retrieveForQuestion(question) {
+      const queryTokens = tokenize(question);
+      return knowledge.map((item, index) => {
+        const chunks = item.chunks && item.chunks.length ? item.chunks : [item.brief];
+        const bestChunk = chunks
+          .map(chunk => ({
+            text: chunk,
+            score: queryTokens.filter(token => chunk.includes(token)).length
+          }))
+          .sort((a, b) => b.score - a.score)[0] || { text: item.brief, score: 0 };
+        const doc = `${item.title} ${item.brief} ${item.tags.join(" ")} ${chunks.join(" ")}`;
+        const docTokens = tokenize(doc);
+        const overlap = queryTokens.filter(token => doc.includes(token) || docTokens.includes(token)).length;
+        const tagHit = item.tags.some(tag => question.includes(tag) || tag.includes(question));
+        const weakBoost = (100 - item.mastery) / 180;
+        const score = overlap + bestChunk.score + (tagHit ? 1.2 : 0) + weakBoost;
+        return { ...item, index, score, sourceChunk: bestChunk.text, reason: tagHit ? "标签语义相关" : overlap ? "来源片段召回" : "弱相关补充" };
+      }).sort((a, b) => b.score - a.score).slice(0, 3);
+    }
+    function renderAgentAnswer() {
+      const question = document.getElementById("question").value.trim();
+      const hits = retrieveForQuestion(question);
+      const strongHits = hits.filter(hit => hit.score > 0.4);
+      const used = strongHits.length ? strongHits : hits.slice(0, 2);
+      document.getElementById("answerCard").style.display = "block";
+      document.getElementById("ragResultPanel").style.display = "block";
+      if (!used.length) {
+        document.getElementById("agentAnswerText").textContent = "知识库中暂未找到可追溯依据。建议先导入相关资料，再生成回答。";
+        document.getElementById("agentSources").innerHTML = `<div class="source-chip"><div class="title">暂无来源</div><div class="muted">没有可引用的个人知识片段</div></div>`;
+        document.getElementById("agentSuggestions").innerHTML = `
+          <div class="agent-suggestion">AI 扩展建议不会自动入库，需用户确认后才会沉淀为知识资产。</div>
+          <div class="muted" style="margin-top:10px">建议优先复习掌握度较低的相关卡片，再把新的理解确认入库。</div>
+        `;
+        return;
+      }
+      const main = used[0];
+      const support = used.slice(1);
+      const supportText = support.length
+        ? `同时，${support.map(hit => `《${hit.title}》`).join("、")}可以作为补充参考。`
+        : "当前知识库中可引用的主要依据集中在这一张知识卡片。";
+      document.getElementById("agentAnswerText").textContent = `根据你的个人知识库，关于“${question || "这个问题"}”，可以这样理解：${main.sourceChunk || main.brief}${supportText}\n\n这条回答来自已入库知识卡片的 RAG 召回片段，因此可以追溯到下方来源。`;
+      document.getElementById("agentSources").innerHTML = used.map((hit, index) => `
+        <div class="source-chip">
+          <div class="title">${hit.title}</div>
+          <div class="muted">来源：${hit.sourceName || "个人知识库"} · 片段 ${index + 1}</div>
+          <div class="muted">“${hit.sourceChunk || hit.brief}”</div>
+          <div class="muted">${hit.reason} · 相关度 ${hit.score.toFixed(1)}</div>
+          ${tagsHtml(hit.tags.slice(0, 3))}
+        </div>
+      `).join("");
+      document.getElementById("agentSuggestions").innerHTML = `
+        <div class="agent-suggestion">AI 扩展建议不会自动入库，需用户确认后才会沉淀为知识资产。</div>
+        <div class="muted" style="margin-top:10px">建议优先复习掌握度较低的相关卡片，再把新的理解确认入库。</div>
+      `;
+    }
+    function relatedKnowledge(index) {
+      const current = knowledge[index];
+      return knowledge
+        .map((item, i) => ({ ...item, index: i }))
+        .filter(item => item.index !== index)
+        .map(item => ({
+          ...item,
+          score: item.tags.filter(tag => current.tags.includes(tag)).length
+        }))
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 3);
+    }
+    function openRelatedSheet(index) {
+      const current = knowledge[index];
+      const mask = document.getElementById("relatedSheetMask");
+      document.getElementById("relatedSheetSub").textContent = `“${current.title}” 的关联知识`;
+      const rows = relatedKnowledge(index);
+      document.getElementById("relatedSheetList").innerHTML = rows.map(item => `
+        <div class="related-card">
+          <div class="title">${item.title}</div>
+          <div class="muted">${item.brief}</div>
+          ${tagsHtml(item.tags)}
+        </div>
+      `).join("") || `<div class="related-card"><div class="title">暂无关联知识</div><div class="muted">继续导入或添加标签后会自动产生关联。</div></div>`;
+      mask.classList.add("show");
+      mask.setAttribute("aria-hidden", "false");
+    }
+    function closeRelatedSheet() {
+      const mask = document.getElementById("relatedSheetMask");
+      mask.classList.remove("show");
+      mask.setAttribute("aria-hidden", "true");
+    }
+    function editKnowledge(index) {
+      const item = knowledge[index];
+      item.title = `${item.title}（已编辑）`;
+      toast("已进入编辑并保存示例修改");
+      renderLibrary(document.getElementById("searchInput").value);
+    }
+    function deleteKnowledge(index) {
+      knowledge.splice(index, 1);
+      toast("已删除知识");
+      renderLibrary(document.getElementById("searchInput").value);
+    }
+    function selectReviewCard(index) {
+      reviewCards.forEach((card, i) => {
+        card.classList.toggle("extra", i !== index);
+        card.classList.toggle("selected", i === index);
+      });
+      reviewDots.forEach((dot, i) => dot.classList.toggle("on", i === index));
+    }
+    function answerHtml(card, strong) {
+      let text = card.answer;
+      if (strong) {
+        card.red.forEach(part => {
+          text = text.replace(part, `<span class="danger-text">${part}</span>`);
+        });
+      }
+      return `<strong>参考答案：</strong>${text}`;
+    }
+    function reviewPriorityMeta(index) {
+      if (index < 6) {
+        return { label: "高优先级", state: "· 今日重点复习", color: "#ff5a4f" };
+      }
+      if (index < 11) {
+        return { label: "待加强", state: "· 需要加强", color: "#f2a03b" };
+      }
+      return { label: "已掌握", state: "· 巩固记忆", color: "var(--green)" };
+    }
+    function renderReviewPriority() {
+      const meta = reviewPriorityMeta(currentReview);
+      const icon = document.getElementById("reviewPriorityIcon");
+      const label = document.getElementById("reviewPriorityLabel");
+      const state = document.getElementById("reviewPriorityState");
+      if (!icon || !label || !state) return;
+      icon.style.stroke = meta.color;
+      label.style.color = meta.color;
+      label.textContent = meta.label;
+      state.textContent = meta.state;
+    }
+    function resetReviewState() {
+      const card = reviewDeck[currentReview];
+      const index = currentReviewPosition + 1;
+      const total = activeReviewList.length || reviewDeck.length;
+      const percent = Math.round(index / total * 100);
+      document.getElementById("reviewIndex").textContent = index;
+      document.getElementById("reviewTotal").textContent = total;
+      document.getElementById("reviewPercent").textContent = `${percent}%`;
+      document.getElementById("reviewProgressFill").style.width = `${percent}%`;
+      document.getElementById("reviewCardTitle").textContent = card.title;
+      document.getElementById("reviewQuestionText").textContent = card.question;
+      renderReviewPriority();
+      const response = document.getElementById("reviewResponse");
+      response.className = "review-response-space empty";
+      response.innerHTML = "";
+      document.getElementById("memoryGrid").style.display = "grid";
+      document.getElementById("nextQuestionBtn").style.display = "none";
+      document.getElementById("knownReviewBtn").dataset.review = "掌握";
+      document.getElementById("knownReviewText").textContent = "掌握";
+      document.getElementById("knownReviewHint").textContent = "完全记得";
+      fuzzyCount = 0;
+    }
+    function showReviewTask() {
+      document.getElementById("reviewTaskView").style.display = "block";
+      document.getElementById("reviewStudyView").style.display = "none";
+      document.getElementById("checkinView").style.display = "none";
+      if (bottomTabs) bottomTabs.classList.remove("is-hidden");
+      renderReviewTaskStatus();
+      renderReviewCountLabels();
+      if (dailyReviewFinished) {
+        reviewFilters.forEach(btn => btn.classList.toggle("active", btn.dataset.reviewFilter === "all"));
+      }
+      filterReviewTasks(document.querySelector("[data-review-filter].active")?.dataset.reviewFilter || "all");
+      renderHomeState();
+    }
+    function startReviewStudy(mode = "daily") {
+      reviewMode = mode;
+      activeReviewList = mode === "wrong"
+        ? reviewDeck.map((_, index) => index).filter(index => reviewResults[index] !== 100)
+        : reviewDeck.map((_, index) => index);
+      if (!activeReviewList.length) {
+        dailyReviewFinished = true;
+        renderReviewTaskStatus();
+        renderHomeState();
+        showReviewTask();
+        return;
+      }
+      const resumeIndex = mode === "daily"
+        ? activeReviewList.findIndex(index => typeof reviewResults[index] !== "number")
+        : 0;
+      if (resumeIndex === -1) {
+        if (mode === "daily") {
+          showCheckin();
+        } else {
+          showReviewTask();
+        }
+        return;
+      }
+      currentReviewPosition = resumeIndex;
+      currentReview = activeReviewList[currentReviewPosition];
+      document.getElementById("reviewTaskView").style.display = "none";
+      document.getElementById("reviewStudyView").style.display = "block";
+      document.getElementById("checkinView").style.display = "none";
+      if (bottomTabs) bottomTabs.classList.add("is-hidden");
+      resetReviewState();
+      content.scrollTop = 0;
+    }
+    function startReviewFromEntry() {
+      const mode = dailyReviewFinished && wrongReviewIndices().length ? "wrong" : "daily";
+      showPage("review");
+      startReviewStudy(mode);
+    }
+    function filterReviewTasks(filter) {
+      reviewFilters.forEach(btn => btn.classList.toggle("active", btn.dataset.reviewFilter === filter));
+      const wrongSet = new Set(wrongReviewIndices());
+      reviewTaskItems.forEach(item => {
+        const index = reviewTaskItems.indexOf(item);
+        const inCurrentScope = !dailyReviewFinished || wrongSet.has(index);
+        const visible = inCurrentScope && (filter === "all" || item.dataset.level === filter);
+        item.style.display = visible ? "block" : "none";
+      });
+    }
+    function reviewedScores() {
+      return reviewResults.filter(value => typeof value === "number");
+    }
+    function wrongReviewIndices() {
+      return reviewDeck.map((_, index) => index).filter(index => typeof reviewResults[index] === "number" && reviewResults[index] !== 100);
+    }
+    function allReviewedMastered() {
+      return reviewedScores().length === reviewDeck.length && wrongReviewIndices().length === 0;
+    }
+    function recordReviewScore(mode) {
+      const scoreMap = { no: 35, known: 100 };
+      reviewResults[currentReview] = scoreMap[mode] ?? 60;
+    }
+    function masterySummary() {
+      const valid = reviewedScores();
+      const total = todayReviewCount();
+      if (!valid.length) {
+        return {
+          value: "--",
+          note: "今日还未复习，赶快开始吧！",
+          avg: null
+        };
+      }
+      const avg = Math.round(valid.reduce((sum, value) => sum + value, 0) / valid.length);
+      const diff = avg - yesterdayMastery;
+      const diffText = isFirstReviewDay ? "第一天复习，暂无昨日对比" : diff === 0 ? "与昨日持平" : diff > 0 ? `较昨日 +${diff}%` : `较昨日 ${diff}%`;
+      return {
+        value: `${avg}%`,
+        note: `今日已复习 ${valid.length} / ${total} 条，${diffText}。`,
+        avg
+      };
+    }
+    function renderTaskMastery() {
+      const panel = document.getElementById("taskMasteryPanel");
+      const summary = masterySummary();
+      if (!panel) return;
+      if (summary.avg === null) {
+        panel.innerHTML = `<div class="task-mastery-empty">今日还未复习，赶快开始吧！</div>`;
+        return;
+      }
+      const diff = summary.avg - yesterdayMastery;
+      const diffHtml = isFirstReviewDay
+        ? "暂无昨日对比"
+        : diff === 0
+          ? "与昨日持平"
+          : `较昨日 <span style="color:${diff > 0 ? "var(--green)" : "#e23b2f"};font-weight:900">${diff > 0 ? "+" : ""}${diff}%</span>`;
+      panel.innerHTML = `
+        <div class="muted" style="font-weight:800;color:#5f6858">掌握度</div>
+        <div class="ring" style="width:92px;height:92px;margin:8px auto 6px;background:radial-gradient(circle,#fff 55%,transparent 56%),conic-gradient(var(--green) 0 ${summary.avg}%,#e7efdf ${summary.avg}% 100%);color:#000">${summary.avg}%</div>
+        <div class="muted">${diffHtml}</div>
+      `;
+    }
+    function masteryPanelHtml(size, summary) {
+      if (summary.avg === null) {
+        return `<div class="task-mastery-empty">今日还未复习，赶快开始吧！</div>`;
+      }
+      const diff = summary.avg - yesterdayMastery;
+      const diffHtml = isFirstReviewDay
+        ? "暂无昨日对比"
+        : diff === 0
+          ? "与昨日持平"
+          : `较昨日 <span style="color:${diff > 0 ? "var(--green)" : "#e23b2f"};font-weight:900">${diff > 0 ? "+" : ""}${diff}%</span>`;
+      return `
+        <div class="muted" style="font-weight:800;color:#5f6858">掌握度</div>
+        <div class="ring" style="width:${size}px;height:${size}px;margin:8px auto 6px;background:radial-gradient(circle,#fff 55%,transparent 56%),conic-gradient(var(--green) 0 ${summary.avg}%,#e7efdf ${summary.avg}% 100%);color:#000">${summary.avg}%</div>
+        <div class="muted">${diffHtml}</div>
+      `;
+    }
+    function todayTaskState() {
+      const wrongCount = wrongReviewIndices().length;
+      const total = todayReviewCount();
+      if (allReviewedMastered()) {
+        return {
+          title: "今日任务已完成",
+          count: String(total),
+          meta: `${total} 条知识已全部掌握`,
+          button: "",
+          showButton: false
+        };
+      }
+      if (dailyReviewFinished) {
+        return {
+          title: "今日已复习完毕",
+          count: String(total),
+          meta: wrongCount ? `还有 ${wrongCount} 条建议巩固` : `${total} 条知识已全部掌握`,
+          button: wrongCount ? "今日错题复习" : "已完成",
+          showButton: true
+        };
+      }
+      return {
+        title: "今日任务",
+        count: String(total),
+        meta: "预计用时 15 分钟",
+        button: "开始复习",
+        showButton: true
+      };
+    }
+    function renderHomeState() {
+      const summary = masterySummary();
+      const state = todayTaskState();
+      const homeTitle = document.getElementById("homeTaskTitle");
+      const homeCount = document.getElementById("homeTaskCount");
+      const homeMeta = document.getElementById("homeTaskMeta");
+      const homeBtn = document.getElementById("homeReviewBtn");
+      const homePanel = document.getElementById("homeMasteryPanel");
+      if (!homeTitle || !homeCount || !homeMeta || !homeBtn || !homePanel) return;
+      homePanel.innerHTML = masteryPanelHtml(96, summary);
+      homeTitle.textContent = state.title;
+      homeCount.textContent = state.count;
+      homeMeta.textContent = state.meta;
+      homeBtn.textContent = state.button;
+      homeBtn.style.display = state.showButton ? "inline-flex" : "none";
+      renderAiReminder();
+      renderProfileStats();
+    }
+    function renderAiReminder() {
+      const title = document.getElementById("aiReminderTitle");
+      const text = document.getElementById("aiReminderText");
+      const btn = document.getElementById("aiReminderBtn");
+      if (!title || !text || !btn) return;
+      const reviewed = reviewedScores().length;
+      const total = todayReviewCount();
+      const wrongCount = wrongReviewIndices().length;
+      btn.style.display = "inline-flex";
+      if (!reviewed) {
+        title.textContent = "12 条知识卡片超过 14 天未回顾";
+        text.textContent = "遗忘风险较高，建议及时复习";
+        btn.textContent = "开始回顾 ›";
+      } else if (!dailyReviewFinished) {
+        title.textContent = `已复习 ${reviewed} / ${total} 条`;
+        text.textContent = `当前掌握度 ${masterySummary().value}，继续完成今日复习`;
+        btn.textContent = "继续复习 ›";
+      } else if (wrongCount) {
+        title.textContent = `${wrongCount} 条知识建议再次巩固`;
+        text.textContent = "这些内容本轮还未完全掌握，适合做今日错题复习";
+        btn.textContent = "错题复习 ›";
+      } else {
+        title.textContent = "今日知识已全部掌握";
+        text.textContent = "复习任务完成，保持节奏就很好";
+        btn.style.display = "none";
+      }
+    }
+    function renderReviewTaskStatus() {
+      const wrongCount = wrongReviewIndices().length;
+      const showComplete = dailyReviewFinished && wrongCount === 0;
+      const filterRow = document.getElementById("reviewFilterRow");
+      const taskList = document.getElementById("reviewTaskList");
+      const completeMessage = document.getElementById("reviewCompleteMessage");
+      const fixedAction = document.getElementById("reviewFixedAction");
+      const startBtn = document.getElementById("startReviewBtn");
+      if (!filterRow || !taskList || !completeMessage || !fixedAction || !startBtn) return;
+      filterRow.style.display = showComplete ? "none" : "grid";
+      taskList.style.display = showComplete ? "none" : "grid";
+      completeMessage.style.display = showComplete ? "grid" : "none";
+      fixedAction.style.visibility = showComplete ? "hidden" : "visible";
+      fixedAction.style.pointerEvents = showComplete ? "none" : "none";
+      startBtn.textContent = dailyReviewFinished && wrongCount ? "今日错题复习" : "开始复习";
+    }
+    function renderReviewCountLabels() {
+      const total = todayReviewCount();
+      const wrongSet = new Set(wrongReviewIndices());
+      const scopedItems = dailyReviewFinished
+        ? reviewTaskItems.filter((_, index) => wrongSet.has(index))
+        : reviewTaskItems;
+      const allFilter = document.querySelector('[data-review-filter="all"]');
+      const highFilter = document.querySelector('[data-review-filter="high"]');
+      const weakFilter = document.querySelector('[data-review-filter="weak"]');
+      if (allFilter) allFilter.textContent = `${dailyReviewFinished ? "错题" : "全部"}(${scopedItems.length || total})`;
+      if (highFilter) highFilter.textContent = `高优先级(${scopedItems.filter(item => item.dataset.level === "high").length})`;
+      if (weakFilter) weakFilter.textContent = `待加强(${scopedItems.filter(item => item.dataset.level === "weak").length})`;
+      const totalLabel = document.getElementById("reviewTotal");
+      if (totalLabel) totalLabel.textContent = total;
+      const checkinSummary = document.getElementById("checkinSummary");
+      if (checkinSummary) checkinSummary.textContent = `已完成今日 ${total} 条复习任务。`;
+    }
+    function addImportedReviewTask(result) {
+      const first = result.knowledge_points[0];
+      reviewDeck.push({
+        title: first.title,
+        question: `请用自己的话解释：${first.title} 的核心含义是什么？`,
+        tags: result.tags.join("、"),
+        summary: first.explanation,
+        answer: first.explanation,
+        red: [first.title, first.explanation.slice(0, 10)]
+      });
+      const item = document.createElement("div");
+      item.className = "review-task-item";
+      item.dataset.level = "high";
+      item.innerHTML = `<div class="review-task-item-head"><span class="level-pill level-high">高优先级</span><span class="state-pill state-forget">今日新增</span></div><div class="title">${first.title}</div><div class="muted">来源：${result.source_type}</div>`;
+      document.getElementById("reviewTaskList").appendChild(item);
+      reviewTaskItems.push(item);
+      renderReviewCountLabels();
+      renderHomeState();
+    }
+    function addImportedFutureReview(result) {
+      // MVP demo: confirmed imports enter the knowledge base now, and their review starts tomorrow.
+      return result;
+    }
+    function showCheckin() {
+      dailyReviewFinished = true;
+      document.getElementById("reviewTaskView").style.display = "none";
+      document.getElementById("reviewStudyView").style.display = "none";
+      document.getElementById("checkinView").style.display = "block";
+      if (bottomTabs) bottomTabs.classList.add("is-hidden");
+      const wrongCount = wrongReviewIndices().length;
+      const checkinTitle = document.querySelector("#checkinView .checkin-title");
+      if (checkinTitle) checkinTitle.textContent = "今日复习完毕，超级棒！";
+      document.getElementById("checkinSummary").textContent = wrongCount
+        ? `已完成今日 ${todayReviewCount()} 条复习内容，还有 ${wrongCount} 条可以继续巩固。`
+        : `${todayReviewCount()} 条知识已全部掌握。`;
+      const wrongBtn = document.getElementById("wrongReviewBtn");
+      wrongBtn.style.display = wrongCount ? "inline-flex" : "none";
+      renderReviewTaskStatus();
+      renderHomeState();
+      content.scrollTop = 0;
+    }
+    function completeReview(mode) {
+      const response = document.getElementById("reviewResponse");
+      response.className = "review-response-space";
+      response.innerHTML = answerHtml(reviewDeck[currentReview], mode === "no");
+      recordReviewScore(mode);
+      renderHomeState();
+      document.getElementById("memoryGrid").style.display = "none";
+      document.getElementById("nextQuestionBtn").style.display = "block";
+    }
+    tabs.forEach(t => t.addEventListener("click", () => {
+      if (t.dataset.tab === "import") {
+        openImportSheet();
+        return;
+      }
+      closeImportSheet();
+      showPage(t.dataset.tab);
+    }));
+    document.querySelectorAll("[data-go]").forEach(b => b.addEventListener("click", () => {
+      closeImportSheet();
+      showPage(b.dataset.go);
+    }));
+    document.querySelectorAll("[data-import]").forEach(card => {
+      card.addEventListener("click", () => {
+        startImportFlow(card.dataset.import);
+      });
+    });
+    document.getElementById("closeImportSheet").addEventListener("click", closeImportSheet);
+    importSheetMask.addEventListener("click", event => {
+      if (event.target === importSheetMask) closeImportSheet();
+    });
+    document.getElementById("closeRelatedSheet").addEventListener("click", closeRelatedSheet);
+    document.getElementById("relatedSheetMask").addEventListener("click", event => {
+      if (event.target === document.getElementById("relatedSheetMask")) closeRelatedSheet();
+    });
+    document.getElementById("libraryManageBtn").addEventListener("click", () => {
+      libraryManageMode = !libraryManageMode;
+      document.getElementById("libraryManageBtn").textContent = libraryManageMode ? "完成" : "管理";
+      renderLibrary(document.getElementById("searchInput").value);
+    });
+    document.querySelectorAll("[data-profile-go]").forEach(item => {
+      item.addEventListener("click", () => showPage(item.dataset.profileGo));
+    });
+    document.getElementById("importParseBtn").addEventListener("click", beginImportParse);
+    document.getElementById("retryUploadBtn").addEventListener("click", () => {
+      openImportSheet();
+    });
+    document.getElementById("retryParseBtn").addEventListener("click", beginImportParse);
+    document.getElementById("adjustImportBtn").addEventListener("click", () => {
+      openImportSheet();
+    });
+    document.getElementById("confirmImportBtn").addEventListener("click", () => {
+      const result = importState.result;
+      const first = result.knowledge_points[0];
+      knowledge.unshift({
+        title: first.title,
+        brief: result.summary,
+        tags: result.tags,
+        mastery: 45,
+        sourceName: result.source_name,
+        chunks: result.source_chunks
+      });
+      addImportedReviewTask(result);
+      renderLibrary();
+      toast("Agent 已入库并加入复习");
+      setTimeout(() => showPage("library"), 420);
+    });
+    document.getElementById("importBackBtn").addEventListener("click", () => showPage("home"));
+    document.getElementById("searchInput").addEventListener("input", e => renderLibrary(e.target.value));
+    document.getElementById("answerBtn").addEventListener("click", () => {
+      renderAgentAnswer();
+      toast("Agent 已完成召回");
+    });
+    document.getElementById("confirmSuggestionBtn").addEventListener("click", () => {
+      const question = document.getElementById("question").value.trim() || "AI 扩展建议";
+      const answer = document.getElementById("agentAnswerText").textContent.trim();
+      knowledge.unshift({
+        title: `${question.slice(0, 18)}的扩展理解`,
+        brief: answer.slice(0, 86),
+        tags: ["AI扩展", "问答沉淀", "待确认"],
+        mastery: 40,
+        sourceName: "AI 扩展建议",
+        chunks: [answer.slice(0, 160)]
+      });
+      renderLibrary();
+      renderProfileStats();
+      toast("扩展建议已入库");
+      setTimeout(() => showPage("library"), 420);
+    });
+    document.getElementById("qaBackBtn").addEventListener("click", () => showPage("library"));
+    document.querySelectorAll("[data-review]").forEach(b => b.addEventListener("click", () => {
+      const result = b.dataset.review;
+      const response = document.getElementById("reviewResponse");
+      response.className = "review-response-space";
+      if (result === "不会") {
+        completeReview("no");
+      } else if (result === "掌握" || result === "想起来了") {
+        completeReview("known");
+      } else {
+        fuzzyCount += 1;
+        document.getElementById("knownReviewBtn").dataset.review = "想起来了";
+        document.getElementById("knownReviewText").textContent = "想起来了";
+        document.getElementById("knownReviewHint").textContent = "查看答案";
+        if (fuzzyCount === 1) {
+          response.innerHTML = `<strong>提示 1：</strong>${reviewDeck[currentReview].tags}`;
+        } else if (fuzzyCount === 2) {
+          response.innerHTML += `<br><br><strong>提示 2：</strong>${reviewDeck[currentReview].summary}`;
+        } else {
+          completeReview("no");
+        }
+      }
+    }));
+    document.getElementById("nextQuestionBtn").addEventListener("click", () => {
+      if (currentReviewPosition >= activeReviewList.length - 1) {
+        if (reviewMode === "daily") {
+          showCheckin();
+        } else {
+          renderHomeState();
+          showReviewTask();
+        }
+      } else {
+        currentReviewPosition += 1;
+        currentReview = activeReviewList[currentReviewPosition];
+        resetReviewState();
+      }
+    });
+    ["startReviewBtn", "startReviewBtn2", "startReviewBtn3"].forEach(id => {
+      const btn = document.getElementById(id);
+      if (btn) btn.addEventListener("click", () => {
+        const mode = dailyReviewFinished && wrongReviewIndices().length ? "wrong" : "daily";
+        startReviewStudy(mode);
+      });
+    });
+    document.getElementById("homeReviewBtn").addEventListener("click", startReviewFromEntry);
+    document.getElementById("aiReminderBtn").addEventListener("click", event => {
+      event.preventDefault();
+      startReviewFromEntry();
+    });
+    document.getElementById("wrongReviewBtn").addEventListener("click", () => startReviewStudy("wrong"));
+    document.getElementById("finishHomeBtn").addEventListener("click", () => showPage("home"));
+    document.getElementById("reviewBackBtn").addEventListener("click", showReviewTask);
+    reviewFilters.forEach(btn => btn.addEventListener("click", () => filterReviewTasks(btn.dataset.reviewFilter)));
+    reviewDots.forEach((dot, i) => dot.addEventListener("click", () => selectReviewCard(i)));
+    selectReviewCard(0);
+    renderReviewCountLabels();
+    filterReviewTasks("all");
+    resetReviewState();
+    renderReviewTaskStatus();
+    renderHomeState();
+    renderProfileStats();
+    renderLibrary();
+  </script>
+</body>
+</html>
