@@ -15,7 +15,7 @@
 
 ### 📱 在线 Demo
 
-👉 **[点击体验 H5 Demo](https://J1ngH.github.io/AI-Knowledge-Management-Assistant/)**（手机打开更佳，支持 iPhone 壳预览）
+👉 **[点击体验 H5 Demo](https://J1ngH.github.io/AI-Knowledge-Management-Assistant/)**
 
 ## 🏗️ 产品架构
 
